@@ -13,7 +13,7 @@ import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 import { fetchWorkouts } from '../api';
 
-const PlanSelectionScreen = ({ navigation }) => {
+const PlanSelectionScreen = ({ route, navigation }) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
   
@@ -22,13 +22,11 @@ const PlanSelectionScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch the list of created plans from firebase 
     const fetchPlans = async () => {
       try {
         setLoading(true);
         const data = await fetchWorkouts();
-        setPlans(Array.isArray(data) ? data : []);
-        setError(null);
+        setPlans(data);
       } catch (error) {
         console.error('Error fetching plans:', error);
         setError('Failed to load workout plans');
@@ -38,7 +36,7 @@ const PlanSelectionScreen = ({ navigation }) => {
     };
   
     fetchPlans();
-  }, []); // Removed plans from dependency array to prevent infinite loop
+  }, []);
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
@@ -59,17 +57,19 @@ const PlanSelectionScreen = ({ navigation }) => {
       ) : (
         <ScrollView style={{ width: '100%' }} contentContainerStyle={styles.scrollContent}>
           {plans && plans.length > 0 ? (
-            plans.map((plan, index) => {
+            Object.entries(plans).map(([index, plan]) => {
               const planName = typeof plan === 'object' ? plan.name || `Plan ${index + 1}` : `Plan ${index + 1}`;
               const planDescription = typeof plan === 'object' && plan.description 
                 ? plan.description 
                 : 'Custom workout plan';
+                  const selectedPlan = plan;
+                  route.params.onGoBack = selectedPlan;
               
               return (
                 <TouchableOpacity
                   key={index}
                   style={styles.planCard}
-                  onPress={() => navigation.goBack()}
+                  onPress={() => navigation.goBack(selectedPlan)}
                 >
                   <View style={styles.planIconContainer}>
                     <Ionicons
