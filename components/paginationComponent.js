@@ -9,39 +9,30 @@ const Pagination = ({
   onPageChange, 
   theme 
 }) => {
-  // Don't render pagination if there's only one page
   if (totalPages <= 1) return null;
 
-  // Determine which page numbers to show
   const getVisiblePageNumbers = () => {
-    // For 5 or fewer pages, show all page numbers
     if (totalPages <= 5) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
     
-    // For more than 5 pages, show a window around the current page
     let pages = [1]; // Always include first page
     
-    // Determine the start and end of our visible window
     let startPage = Math.max(2, currentPage - 1);
     let endPage = Math.min(totalPages - 1, currentPage + 1);
     
-    // Add ellipsis after first page if needed
     if (startPage > 2) {
       pages.push('...');
     }
     
-    // Add the window of pages around current page
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
     
-    // Add ellipsis before last page if needed
     if (endPage < totalPages - 1) {
       pages.push('...');
     }
     
-    // Always include last page
     if (totalPages > 1) {
       pages.push(totalPages);
     }
@@ -71,7 +62,6 @@ const Pagination = ({
         />
       </TouchableOpacity>
 
-      {/* Page numbers */}
       {visiblePages.map((page, index) => (
         <TouchableOpacity
           key={`page-${index}`}
@@ -98,7 +88,6 @@ const Pagination = ({
         </TouchableOpacity>
       ))}
 
-      {/* Next button */}
       <TouchableOpacity
         style={[
           styles.paginationButton,
