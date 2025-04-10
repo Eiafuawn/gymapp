@@ -10,8 +10,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Import services and styles
-import { useWorkoutState, handleSave, getWorkouts } from '../workouts';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 
@@ -22,9 +20,7 @@ const PlannerScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeWeek, setActiveWeek] = useState(1);
 
-  // Mock plan data until you have the real data
   useEffect(() => {
-    // This simulates fetching plan data
     const mockPlan = {
       title: "Summer Shape-Up",
       days: [
@@ -46,7 +42,7 @@ const PlannerScreen = ({ navigation }) => {
 
   const navigateToExerciseScreen = () => {
     navigation.navigate('CreateWorkout', {
-      selectedDay: null, // You can pass selected day if needed
+      selectedDay: null, 
       selectedWeek: activeWeek
     });
   };
@@ -178,7 +174,6 @@ const PlannerScreen = ({ navigation }) => {
           </View>
         )}
 
-        {/* Empty card with a helpful prompt */}
         <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground, marginTop: 24, padding: 20 }]}>
           <View style={styles.emptyStateContainer}>
             <Ionicons
@@ -281,7 +276,6 @@ const styles = {
     shadowRadius: 3,
     elevation: 3,
   },
-  // ...other existing styles
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',

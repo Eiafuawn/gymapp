@@ -16,8 +16,9 @@ import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 import { fetchBodyParts, fetchExo, fetchExoPerBodyPart } from '../api';
 import Pagination from '../components/paginationComponent';
+import { handleSaveWorkout } from '../api'; // Import your save function
 
-const createWorkoutScreen = ({ route, navigation }) => {
+const CreateWorkoutScreen = ({ route, navigation }) => {
   const { selectedDay, selectedWeek } = route.params || {};
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
@@ -32,7 +33,6 @@ const createWorkoutScreen = ({ route, navigation }) => {
   const [workoutName, setWorkoutName] = useState('');
   const exerciseListRef = useRef(null);
 
-  // Set default workout name based on selected day
   useEffect(() => {
     if (selectedDay) {
       setWorkoutName(`${selectedDay} Workout - Week ${selectedWeek}`);
@@ -123,13 +123,20 @@ const createWorkoutScreen = ({ route, navigation }) => {
 
   const selectedExercises = getSelectedExercises();
 
-  const handleSaveWorkout = () => {
+  const saveWorkout = () => {
     console.log('Saving workout:', {
       name: workoutName,
       exercises: selectedExercises,
       day: selectedDay,
       week: selectedWeek
     });
+    handleSaveWorkout({
+      name: workoutName,
+      exercises: selectedExercises,
+      day: selectedDay,
+      week: selectedWeek
+    });
+
 
     navigation.goBack();
   };
@@ -343,7 +350,7 @@ const createWorkoutScreen = ({ route, navigation }) => {
               elevation: 3,
             }
           ]}
-          onPress={handleSaveWorkout}
+          onPress={saveWorkout}
           disabled={selectedExercises.length === 0}
         >
           <View style={styles.buttonContent}>
@@ -510,4 +517,4 @@ const styles = {
   }
 };
 
-export default createWorkoutScreen;
+export default CreateWorkoutScreen;

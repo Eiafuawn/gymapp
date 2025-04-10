@@ -1,14 +1,27 @@
-// api.js - API service for workouts
+// Import onValue & useEffect
+import { useState, useEffect } from 'react';
+import { app } from './firebaseConfig';
+import { getDatabase, ref, push, onValue } from "firebase/database";
+
+const database = getDatabase(app);
+
+export const handleSaveWorkout = (workout) => {
+  push(ref(database, 'workouts/'), workout)
+    .then(() => {
+      console.log('Workout saved successfully');
+    })
+    .catch((error) => {
+      console.error('Error saving workout:', error);
+    });
+}
+
 export const fetchTodayWorkout = async () => {
   try {
-    // Replace with your actual API endpoint
     const response = await fetch('your-api-url/today-workout');
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching today\'s workout:', error);
-    // Return mock data as fallback
-    return getMockTodayWorkout();
+    console.error('Error fetching today\'s workout:', error); return getMockTodayWorkout();
   }
 };
 
@@ -96,5 +109,21 @@ export const fetchBodyParts = async () => {
   } catch (error) {
     console.error('Error fetching body parts:', error);
     return [];
+  }
+}
+
+export const fetchWorkouts = async () => {
+  try {
+    const itemsRef = ref(database, 'workouts/');
+    const workouts = [];
+    onValue(itemsRef, (snapshot) => {
+      const data = snapshot.val();
+      workouts.push(data);
+    });
+    console.log('Fetched workouts:', workouts);
+    return workouts;
+  } catch (error) {
+    console.error('Error fetching workouts:', error);
+    return getMockWorkoutPlan();
   }
 }
