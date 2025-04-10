@@ -19,6 +19,7 @@ const PlannerScreen = ({ navigation }) => {
   const [plan, setPlan] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeWeek, setActiveWeek] = useState(1);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
     const mockPlan = {
@@ -35,20 +36,28 @@ const PlannerScreen = ({ navigation }) => {
     };
 
     setTimeout(() => {
-      setPlan(mockPlan);
+      if (selectedPlan) {
+        setPlan(selectedPlan);
+        console.log('Selected plan:', selectedPlan);
+      } else {
+        setPlan(mockPlan);
+        console.log('Default plan:', mockPlan);
+      }
       setIsLoading(false);
     }, 1000);
   }, []);
 
   const navigateToExerciseScreen = () => {
     navigation.navigate('CreateWorkout', {
-      selectedDay: null, 
+      selectedDay: null,
       selectedWeek: activeWeek
     });
   };
 
   const navigateToPlanSelection = () => {
-    navigation.navigate('PlanSelection')
+    navigation.navigate('PlanSelection', {
+      onGoBack: selectedPlan,
+    })
   }
 
   return (
