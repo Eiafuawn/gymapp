@@ -1,5 +1,3 @@
-// Import onValue & useEffect
-import { useState, useEffect } from 'react';
 import { app } from './firebaseConfig';
 import { getDatabase, ref, push, onValue } from "firebase/database";
 
@@ -27,13 +25,11 @@ export const fetchTodayWorkout = async () => {
 
 export const fetchWorkoutPlan = async () => {
   try {
-    // Replace with your actual API endpoint
     const response = await fetch('your-api-url/workout-plan');
     const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error fetching workout plan:', error);
-    // Return mock data as fallback
     return getMockWorkoutPlan();
   }
 };
@@ -50,7 +46,6 @@ export const searchWorkouts = async (query, category = 'all') => {
   }
 };
 
-// Mock data for development and testing
 export const getMockTodayWorkout = () => {
   return {
     title: "Full Body Strength",
@@ -79,9 +74,16 @@ export const getMockWorkoutPlan = () => {
   };
 };
 
-export const fetchExo = async () => {
+export const fetchExo = async (page, search) => {
   try {
-    const response = await fetch('https://exercisedb-api.vercel.app/api/v1/exercises');
+    let response;
+    if (page && !search) {
+      response = await fetch(`https://exercisedb-api.vercel.app/api/v1/exercises?offset=${(page-1) * 10}&limit=10`);
+    } else if (search && !page) {
+      response = await fetch(`https://exercisedb-api.vercel.app/api/v1/autocomplete?search=${search}`);
+    } else if (search && page) {
+      response = await fetch(`https://exercisedb-api.vercel.app/api/v1/autocomplete?search=${search}?offset=${page * 10}&limit=10&search=${search}`);
+    }
     const data = await response.json();
     return data;
   } catch (error) {
@@ -115,12 +117,11 @@ export const fetchBodyParts = async () => {
 export const fetchWorkouts = async () => {
   try {
     const itemsRef = ref(database, 'workouts/');
-    const workouts = [];
+    let workouts = [];
     onValue(itemsRef, (snapshot) => {
       const data = snapshot.val();
-      workouts.push(data);
+      workouts = data ? Object.values(data) : [];
     });
-    console.log('Fetched workouts:', workouts);
     return workouts;
   } catch (error) {
     console.error('Error fetching workouts:', error);
