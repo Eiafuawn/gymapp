@@ -66,7 +66,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
 
         setExercises(response.data.exercises);
         setTotalPages(response.data.totalPages);
-        setCurrentPage(response.data.currentPage);
       } catch (error) {
         console.error('Error fetching exercises:', error);
       } finally {
@@ -74,7 +73,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
       }
     };
 
-    // Debounce search queries
     const timeoutId = setTimeout(() => {
       fetchExercises();
     }, 500);
@@ -83,39 +81,37 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   }, [activeCategory, currentPage, searchQuery]);
 
   const handlePageChange = (page) => {
-    if (page !== currentPage) {
-      setCurrentPage(page);
-      if (exerciseListRef.current) {
-        exerciseListRef.current.scrollTo({ y: 0, animated: true });
+    const timeoutId = setTimeout(() => {
+      if (page !== currentPage) {
+        setCurrentPage(page);
+        if (exerciseListRef.current) {
+          exerciseListRef.current.scrollTo({ y: 0, animated: true });
+        }
       }
-    }
+    }, 500);
+    return () => clearTimeout(timeoutId);
   };
 
   const handleToggleExercise = (exercise) => {
     setSelectedExerciseIds(prevIds => {
       const id = exercise.exerciseId;
       if (prevIds.includes(id)) {
-        // Remove if already selected
         return prevIds.filter(exerciseId => exerciseId !== id);
       } else {
-        // Add if not selected
         return [...prevIds, id];
       }
     });
   };
 
-  // Get the full exercise objects for selected IDs
   const getSelectedExercises = () => {
     const allExercisesMap = new Map();
 
-    // Add all exercises to the map keyed by ID
     exercises.forEach(exercise => {
       if (exercise.exerciseId) {
         allExercisesMap.set(exercise.exerciseId, exercise);
       }
     });
 
-    // Get the full objects for selected IDs
     return selectedExerciseIds
       .map(exerciseId => allExercisesMap.get(exerciseId))
       .filter(exercise => exercise !== undefined);
@@ -124,12 +120,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   const selectedExercises = getSelectedExercises();
 
   const saveWorkout = () => {
-    console.log('Saving workout:', {
-      name: workoutName,
-      exercises: selectedExercises,
-      day: selectedDay,
-      week: selectedWeek
-    });
     handleSaveWorkout({
       name: workoutName,
       exercises: selectedExercises,
@@ -148,7 +138,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView contentContainerStyle={globalStyles.scrollContent}>
-        {/* Workout name input */}
         <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
           <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Workout Details</Text>
 
@@ -292,7 +281,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
             )}
           </ScrollView>
 
-          {/* Pagination */}
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -301,7 +289,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
           />
         </View>
 
-        {/* Selected exercises summary */}
         {selectedExercises.length > 0 && (
           <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground, marginTop: 16 }]}>
             <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Selected Exercises</Text>
