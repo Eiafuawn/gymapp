@@ -1,171 +1,267 @@
 import React, { useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import {
-  Text,
-  SafeAreaView,
   View,
+  Text,
+  FlatList,
   TouchableOpacity,
-  ScrollView,
+  SafeAreaView,
+  StyleSheet,
+  Image,
   ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
-import { fetchWorkouts } from '../api';
 
-const PlanSelectionScreen = ({ route, navigation }) => {
+const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
-  
+  const [isLoading, setIsLoading] = useState(true);
   const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  // Get the current plan passed from PlannerScreen
+  const currentPlan = route.params?.onGoBack;
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchWorkouts();
-        setPlans(data);
-      } catch (error) {
-        console.error('Error fetching plans:', error);
-        setError('Failed to load workout plans');
-      } finally {
-        setLoading(false);
+    // Simulate loading data from an API
+    const mockPlans = [
+      {
+        id: '1',
+        title: 'Summer Shape-Up',
+        category: 'Beginner',
+        duration: '4 Weeks',
+        image: 'https://via.placeholder.com/150',
+        days: [
+          { day: "Monday", type: "Upper Body", restDay: false },
+          { day: "Tuesday", type: "Lower Body", restDay: false },
+          { day: "Wednesday", type: null, restDay: true },
+          { day: "Thursday", type: "Full Body", restDay: false },
+          { day: "Friday", type: "Core & Cardio", restDay: false },
+          { day: "Saturday", type: null, restDay: true },
+          { day: "Sunday", type: "Active Recovery", restDay: false }
+        ]
+      },
+      {
+        id: '2',
+        title: 'Full Body Blast',
+        category: 'Intermediate',
+        duration: '6 Weeks',
+        image: 'https://via.placeholder.com/150',
+        days: [
+          { day: "Monday", type: "Push", restDay: false },
+          { day: "Tuesday", type: "Pull", restDay: false },
+          { day: "Wednesday", type: "Legs", restDay: false },
+          { day: "Thursday", type: null, restDay: true },
+          { day: "Friday", type: "Upper Body", restDay: false },
+          { day: "Saturday", type: "Lower Body", restDay: false },
+          { day: "Sunday", type: null, restDay: true }
+        ]
+      },
+      {
+        id: '3',
+        title: 'Strength Builder',
+        category: 'Advanced',
+        duration: '8 Weeks',
+        image: 'https://via.placeholder.com/150',
+        days: [
+          { day: "Monday", type: "Chest & Triceps", restDay: false },
+          { day: "Tuesday", type: "Back & Biceps", restDay: false },
+          { day: "Wednesday", type: "Legs & Shoulders", restDay: false },
+          { day: "Thursday", type: null, restDay: true },
+          { day: "Friday", type: "Upper Power", restDay: false },
+          { day: "Saturday", type: "Lower Power", restDay: false },
+          { day: "Sunday", type: null, restDay: true }
+        ]
+      },
+      {
+        id: '4',
+        title: 'Endurance Focus',
+        category: 'Intermediate',
+        duration: '6 Weeks',
+        image: 'https://via.placeholder.com/150',
+        days: [
+          { day: "Monday", type: "HIIT", restDay: false },
+          { day: "Tuesday", type: "Strength", restDay: false },
+          { day: "Wednesday", type: "Cardio", restDay: false },
+          { day: "Thursday", type: null, restDay: true },
+          { day: "Friday", type: "Circuit Training", restDay: false },
+          { day: "Saturday", type: "Endurance", restDay: false },
+          { day: "Sunday", type: "Active Recovery", restDay: false }
+        ]
+      },
+      {
+        id: '5',
+        title: 'At-Home Minimal Equipment',
+        category: 'Beginner',
+        duration: '4 Weeks',
+        image: 'https://via.placeholder.com/150',
+        days: [
+          { day: "Monday", type: "Full Body", restDay: false },
+          { day: "Tuesday", type: "Cardio", restDay: false },
+          { day: "Wednesday", type: null, restDay: true },
+          { day: "Thursday", type: "Full Body", restDay: false },
+          { day: "Friday", type: "HIIT", restDay: false },
+          { day: "Saturday", type: "Mobility", restDay: false },
+          { day: "Sunday", type: null, restDay: true }
+        ]
       }
-    };
-  
-    fetchPlans();
+    ];
+
+    setTimeout(() => {
+      setPlans(mockPlans);
+      setIsLoading(false);
+    }, 1000);
   }, []);
+
+  const handleSelectPlan = (plan) => {
+    navigation.goBack();
+    route.params?.onSelect(plan);
+  };
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
-      {loading ? (
-        <View style={styles.centerContent}>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={[globalStyles.text, { color: theme.colors.text, marginTop: 10 }]}>
-            Loading plans...
-          </Text>
-        </View>
-      ) : error ? (
-        <View style={styles.centerContent}>
-          <Ionicons name="alert-circle-outline" size={40} color={theme.colors.error} />
-          <Text style={[globalStyles.text, { color: theme.colors.error, marginTop: 10 }]}>
-            {error}
-          </Text>
+          <Text style={[styles.loadingText, { color: theme.colors.text }]}>Loading plans...</Text>
         </View>
       ) : (
-        <ScrollView style={{ width: '100%' }} contentContainerStyle={styles.scrollContent}>
-          {plans && plans.length > 0 ? (
-            Object.entries(plans).map(([index, plan]) => {
-              const planName = typeof plan === 'object' ? plan.name || `Plan ${index + 1}` : `Plan ${index + 1}`;
-              const planDescription = typeof plan === 'object' && plan.description 
-                ? plan.description 
-                : 'Custom workout plan';
-                  const selectedPlan = plan;
-                  route.params.onGoBack = selectedPlan;
-              
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.planCard}
-                  onPress={() => navigation.goBack(selectedPlan)}
-                >
-                  <View style={styles.planIconContainer}>
-                    <Ionicons
-                      name="dumbbell" 
-                      size={24} 
-                      color={theme.colors.primary} 
-                    />
+        <FlatList
+          data={plans}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.planItem,
+                currentPlan?.id === item.id && styles.currentPlanItem,
+                { backgroundColor: theme.colors.cardBackground }
+              ]}
+              activeOpacity={0.7}
+              onPress={() => handleSelectPlan(item)}
+            >
+              <Image
+                source={{ uri: item.image }}
+                style={styles.planImage}
+              />
+
+              <View style={styles.planInfo}>
+                <Text style={[styles.planTitle, { color: theme.colors.text }]}>{item.title}</Text>
+                <View style={styles.planMeta}>
+                  <View style={styles.planMetaItem}>
+                    <Ionicons name="fitness-outline" size={14} color={theme.colors.textSecondary} />
+                    <Text style={[styles.planMetaText, { color: theme.colors.textSecondary }]}>
+                      {item.category}
+                    </Text>
                   </View>
-                  <View style={styles.planInfo}>
-                    <Text style={styles.planName}>{planName}</Text>
-                    <Text style={styles.planDescription}>{planDescription}</Text>
+                  <View style={styles.planMetaItem}>
+                    <Ionicons name="calendar-outline" size={14} color={theme.colors.textSecondary} />
+                    <Text style={[styles.planMetaText, { color: theme.colors.textSecondary }]}>
+                      {item.duration}
+                    </Text>
                   </View>
-                  <Ionicons
-                    name="chevron-right" 
-                    size={24} 
-                    color={theme.colors.primary} 
-                  />
-                </TouchableOpacity>
-              );
-            })
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="playlist-remove" size={60} color={theme.colors.text} opacity={0.5} />
-              <Text style={[globalStyles.sectionTitle, { color: theme.colors.text, opacity: 0.7, marginTop: 16 }]}>
-                No plans available
-              </Text>
-              <Text style={[globalStyles.text, { color: theme.colors.text, opacity: 0.5, textAlign: 'center', marginTop: 8 }]}>
-                Create your first workout plan to get started
-              </Text>
-            </View>
+                </View>
+              </View>
+
+              {currentPlan?.id === item.id && (
+                <View style={[styles.checkmark, { backgroundColor: theme.colors.primary }]}>
+                  <Ionicons name="checkmark" size={16} color="white" />
+                </View>
+              )}
+            </TouchableOpacity>
           )}
-        </ScrollView>
+        />
       )}
     </SafeAreaView>
   );
 };
 
-const styles = {
-  headerContainer: {
-    width: '100%',
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.1)',
-    alignItems: 'center'
   },
-  centerContent: {
+  closeButton: {
+    padding: 4,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  rightPlaceholder: {
+    width: 28, // Same width as back button for alignment
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  planItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  currentPlanItem: {
+    borderWidth: 2,
+    borderColor: '#4263eb',
+  },
+  planImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: '#f1f3f5',
+  },
+  planInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  planTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  planMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  planMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  planMetaText: {
+    fontSize: 14,
+    marginLeft: 4,
+  },
+  checkmark: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20
   },
-  scrollContent: {
-    padding: 16
-  },
-  planCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 12,
-    marginBottom: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2
-  },
-  planIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16
-  },
-  planInfo: {
-    flex: 1
-  },
-  planName: {
+  loadingText: {
+    marginTop: 12,
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4
   },
-  planDescription: {
-    fontSize: 14,
-    color: 'gray'
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20
-  }
-};
-
+});
 
 export default PlanSelectionScreen;

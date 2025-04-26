@@ -6,24 +6,36 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
-  ActivityIndicator
+  ActivityIndicator,
+  StyleSheet
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 
-const PlannerScreen = ({ navigation }) => {
+const PlannerScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
   const [plan, setPlan] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeWeek, setActiveWeek] = useState(1);
-  const [selectedPlan, setSelectedPlan] = useState(null);
 
+  // Add console log to check route params
   useEffect(() => {
+    if (route.params?.selectedPlan) {
+      console.log('Route params received:', route.params.selectedPlan);
+    }
+  }, [route.params]);
+
+
+  const loadDefaultPlan = () => {
     const mockPlan = {
+      id: 'default',
       title: "Summer Shape-Up",
+      category: "Beginner",
+      duration: "4 Weeks",
       days: [
         { day: "Monday", type: "Upper Body", restDay: false },
         { day: "Tuesday", type: "Lower Body", restDay: false },
@@ -36,15 +48,18 @@ const PlannerScreen = ({ navigation }) => {
     };
 
     setTimeout(() => {
-      if (selectedPlan) {
-        setPlan(selectedPlan);
-        console.log('Selected plan:', selectedPlan);
-      } else {
-        setPlan(mockPlan);
-        console.log('Default plan:', mockPlan);
-      }
+      setPlan(mockPlan);
+      console.log('Default plan loaded:', mockPlan);
       setIsLoading(false);
     }, 1000);
+  };
+
+  useEffect(() => {
+    // Initial load
+    if (!route.params?.selectedPlan) {
+      loadDefaultPlan();
+      console.log('Loading default plan on initial load');
+    }
   }, []);
 
   const navigateToExerciseScreen = () => {
@@ -55,10 +70,14 @@ const PlannerScreen = ({ navigation }) => {
   };
 
   const navigateToPlanSelection = () => {
+    console.log('Navigating to plan selection with current plan:', plan);
     navigation.navigate('PlanSelection', {
-      onGoBack: selectedPlan,
-    })
-  }
+      onSelect: (selectedPlan) => {
+        console.log('Selected plan returned:', selectedPlan);
+        setPlan(selectedPlan); // <- or whatever updates your plan on the main page
+      },
+    });
+  };
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
@@ -85,7 +104,7 @@ const PlannerScreen = ({ navigation }) => {
           <View style={styles.buttonContent}>
             <Ionicons name="list-circle-outline" size={20} color="white" style={styles.buttonIcon} />
             <Text style={[globalStyles.buttonText, { color: 'white', fontSize: 16, fontWeight: '600' }]}>
-              Select a Plan
+              {plan ? 'Change Plan' : 'Select a Plan'}
             </Text>
           </View>
         </TouchableOpacity>
@@ -99,6 +118,25 @@ const PlannerScreen = ({ navigation }) => {
           <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
             <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Current Plan</Text>
             <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>{plan.title}</Text>
+
+            {plan.category && (
+              <View style={styles.planMetaContainer}>
+                <View style={styles.planMetaItem}>
+                  <Ionicons name="fitness-outline" size={16} color={theme.colors.textSecondary} />
+                  <Text style={[styles.planMetaText, { color: theme.colors.textSecondary }]}>
+                    {plan.category}
+                  </Text>
+                </View>
+                {plan.duration && (
+                  <View style={styles.planMetaItem}>
+                    <Ionicons name="calendar-outline" size={16} color={theme.colors.textSecondary} />
+                    <Text style={[styles.planMetaText, { color: theme.colors.textSecondary }]}>
+                      {plan.duration}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             <View style={styles.weekSelector}>
               {[1, 2, 3, 4].map(week => (
@@ -228,24 +266,37 @@ const PlannerScreen = ({ navigation }) => {
   );
 };
 
-// Component-specific styles
-const styles = {
+const styles = StyleSheet.create({
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+  },
   weekSelector: {
     flexDirection: 'row',
     marginVertical: 16,
+    justifyContent: 'space-between',
   },
   weekButton: {
     flex: 1,
-    alignItems: 'center',
     paddingVertical: 10,
     marginHorizontal: 4,
-    borderRadius: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   weekButtonActive: {
     borderWidth: 0,
@@ -258,41 +309,51 @@ const styles = {
     color: 'white',
     fontWeight: '600',
   },
+  daysList: {
+    marginTop: 8,
+  },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: 20,
+    alignItems: 'center',
   },
   editButton: {
-    flex: 1,
-    marginRight: 8,
     paddingVertical: 12,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    paddingHorizontal: 24,
+    borderRadius: 10,
   },
-  createButton: {
-    flex: 1,
-    marginLeft: 8,
-    paddingVertical: 12,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  buttonContent: {
-    flexDirection: 'row',
+  emptyStateContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 20,
   },
-  buttonIcon: {
-    marginRight: 8,
-  }
-};
+  emptyStateIcon: {
+    marginBottom: 16,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyStateDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  planMetaContainer: {
+    flexDirection: 'row',
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  planMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  planMetaText: {
+    fontSize: 14,
+    marginLeft: 4,
+  },
+});
 
 export default PlannerScreen;
