@@ -70,10 +70,8 @@ const PlannerScreen = ({ navigation, route }) => {
   };
 
   const navigateToPlanSelection = () => {
-    console.log('Navigating to plan selection with current plan:', plan);
     navigation.navigate('PlanSelection', {
       onSelect: (selectedPlan) => {
-        console.log('Selected plan returned:', selectedPlan);
         setPlan(selectedPlan); // <- or whatever updates your plan on the main page
       },
     });
