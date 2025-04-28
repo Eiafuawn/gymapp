@@ -10,10 +10,10 @@ import {
   StyleSheet
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
+import { fetchPlans } from '../api';
 
 const PlannerScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
@@ -22,45 +22,35 @@ const PlannerScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeWeek, setActiveWeek] = useState(1);
 
-  // Add console log to check route params
   useEffect(() => {
     if (route.params?.selectedPlan) {
       console.log('Route params received:', route.params.selectedPlan);
     }
   }, [route.params]);
 
-
-  const loadDefaultPlan = () => {
-    const mockPlan = {
-      id: 'default',
-      title: "Summer Shape-Up",
-      category: "Beginner",
-      duration: "4 Weeks",
-      days: [
-        { day: "Monday", type: "Upper Body", restDay: false },
-        { day: "Tuesday", type: "Lower Body", restDay: false },
-        { day: "Wednesday", type: null, restDay: true },
-        { day: "Thursday", type: "Full Body", restDay: false },
-        { day: "Friday", type: "Core & Cardio", restDay: false },
-        { day: "Saturday", type: null, restDay: true },
-        { day: "Sunday", type: "Active Recovery", restDay: false }
-      ]
+  useEffect(() => {
+    const loadDefaultPlan = async () => {
+      try {
+        const plans = await fetchPlans();
+        if (plans.length > 0) {
+          const defaultPlan = plans[0];
+          setPlan(defaultPlan);
+        } else {
+          console.log('No plans found.');
+        }
+      } catch (error) {
+        console.error('Error loading default plan:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    setTimeout(() => {
-      setPlan(mockPlan);
-      console.log('Default plan loaded:', mockPlan);
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    // Initial load
     if (!route.params?.selectedPlan) {
       loadDefaultPlan();
       console.log('Loading default plan on initial load');
     }
   }, []);
+
 
   const navigateToExerciseScreen = () => {
     navigation.navigate('CreateWorkout', {
@@ -72,7 +62,7 @@ const PlannerScreen = ({ navigation, route }) => {
   const navigateToPlanSelection = () => {
     navigation.navigate('PlanSelection', {
       onSelect: (selectedPlan) => {
-        setPlan(selectedPlan); // <- or whatever updates your plan on the main page
+        setPlan(selectedPlan);
       },
     });
   };
@@ -115,7 +105,7 @@ const PlannerScreen = ({ navigation, route }) => {
         ) : (
           <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
             <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Current Plan</Text>
-            <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>{plan.title}</Text>
+            <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>{plan.name}</Text>
 
             {plan.category && (
               <View style={styles.planMetaContainer}>
@@ -171,7 +161,6 @@ const PlannerScreen = ({ navigation, route }) => {
                     index < plan.days.length - 1 && globalStyles.listItemDivider
                   ]}
                   onPress={() => {
-                    // Navigate to exercise selection with this specific day
                     navigation.navigate('CreateWorkout', {
                       selectedDay: day.day,
                       selectedWeek: activeWeek
@@ -184,7 +173,7 @@ const PlannerScreen = ({ navigation, route }) => {
                       globalStyles.itemSubtitle,
                       { color: !day.restDay ? theme.colors.text : theme.colors.border }
                     ]}>
-                      {!day.restDay ? day.type : 'Rest Day'}
+                      {!day.restDay ? day.workout : 'Rest Day'}
                     </Text>
                   </View>
                   <Ionicons

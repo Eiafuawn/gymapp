@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
+import { fetchPlans } from '../api';
 
 const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const colorScheme = useColorScheme();
@@ -23,93 +24,17 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const currentPlan = route.params?.onGoBack;
 
   useEffect(() => {
-    const mockPlans = [
-      {
-        id: '1',
-        title: 'Summer Shape-Up',
-        category: 'Beginner',
-        duration: '4 Weeks',
-        image: 'https://via.placeholder.com/150',
-        days: [
-          { day: "Monday", type: "Upper Body", restDay: false },
-          { day: "Tuesday", type: "Lower Body", restDay: false },
-          { day: "Wednesday", type: null, restDay: true },
-          { day: "Thursday", type: "Full Body", restDay: false },
-          { day: "Friday", type: "Core & Cardio", restDay: false },
-          { day: "Saturday", type: null, restDay: true },
-          { day: "Sunday", type: "Active Recovery", restDay: false }
-        ]
-      },
-      {
-        id: '2',
-        title: 'Full Body Blast',
-        category: 'Intermediate',
-        duration: '6 Weeks',
-        image: 'https://via.placeholder.com/150',
-        days: [
-          { day: "Monday", type: "Push", restDay: false },
-          { day: "Tuesday", type: "Pull", restDay: false },
-          { day: "Wednesday", type: "Legs", restDay: false },
-          { day: "Thursday", type: null, restDay: true },
-          { day: "Friday", type: "Upper Body", restDay: false },
-          { day: "Saturday", type: "Lower Body", restDay: false },
-          { day: "Sunday", type: null, restDay: true }
-        ]
-      },
-      {
-        id: '3',
-        title: 'Strength Builder',
-        category: 'Advanced',
-        duration: '8 Weeks',
-        image: 'https://via.placeholder.com/150',
-        days: [
-          { day: "Monday", type: "Chest & Triceps", restDay: false },
-          { day: "Tuesday", type: "Back & Biceps", restDay: false },
-          { day: "Wednesday", type: "Legs & Shoulders", restDay: false },
-          { day: "Thursday", type: null, restDay: true },
-          { day: "Friday", type: "Upper Power", restDay: false },
-          { day: "Saturday", type: "Lower Power", restDay: false },
-          { day: "Sunday", type: null, restDay: true }
-        ]
-      },
-      {
-        id: '4',
-        title: 'Endurance Focus',
-        category: 'Intermediate',
-        duration: '6 Weeks',
-        image: 'https://via.placeholder.com/150',
-        days: [
-          { day: "Monday", type: "HIIT", restDay: false },
-          { day: "Tuesday", type: "Strength", restDay: false },
-          { day: "Wednesday", type: "Cardio", restDay: false },
-          { day: "Thursday", type: null, restDay: true },
-          { day: "Friday", type: "Circuit Training", restDay: false },
-          { day: "Saturday", type: "Endurance", restDay: false },
-          { day: "Sunday", type: "Active Recovery", restDay: false }
-        ]
-      },
-      {
-        id: '5',
-        title: 'At-Home Minimal Equipment',
-        category: 'Beginner',
-        duration: '4 Weeks',
-        image: 'https://via.placeholder.com/150',
-        days: [
-          { day: "Monday", type: "Full Body", restDay: false },
-          { day: "Tuesday", type: "Cardio", restDay: false },
-          { day: "Wednesday", type: null, restDay: true },
-          { day: "Thursday", type: "Full Body", restDay: false },
-          { day: "Friday", type: "HIIT", restDay: false },
-          { day: "Saturday", type: "Mobility", restDay: false },
-          { day: "Sunday", type: null, restDay: true }
-        ]
+    const getPlans = async () => {
+      try {
+        const plans = await fetchPlans();
+        setPlans(plans);
+      } catch (error) {
+        console.error('Error fetching plans:', error);
       }
-    ];
+    }
 
-    setTimeout(() => {
-      setPlans(mockPlans);
-      setIsLoading(false);
-    }, 1000);
+    setPlans(getPlans());
+    setIsLoading(false);
   }, []);
 
   const handleSelectPlan = (plan) => {
@@ -162,7 +87,7 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
                 style={styles.planImage}
               />
               <View style={styles.planInfo}>
-                <Text style={[styles.planTitle, { color: theme.colors.text }]}>{item.title}</Text>
+                <Text style={[styles.planTitle, { color: theme.colors.text }]}>{item.name}</Text>
                 <View style={styles.planMeta}>
                   <View style={styles.planMetaItem}>
                     <Ionicons name="fitness-outline" size={14} color={theme.colors.textSecondary} />

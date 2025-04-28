@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme } from '../theme';
 import { useColorScheme } from 'react-native';
-import { fetchWorkouts } from '../api';
+import { fetchWorkouts, handleSavePlan } from '../api';
 
 const CreatePlanScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
@@ -25,34 +25,29 @@ const CreatePlanScreen = ({ navigation, route }) => {
 
 
   useEffect(() => {
-    const loadWorkouts = async () => {
+    const getWorkouts = async () => {
       try {
-        const data = await fetchWorkouts();
-        console.log('Fetched workouts:', data);
-        setWorkouts(data);
+        const workouts = await fetchWorkouts();
+        setWorkouts(workouts);
       } catch (error) {
         console.error('Error fetching workouts:', error);
       }
-    };
-    loadWorkouts();
+    }
+    getWorkouts();
   }, []);
+
 
   const handleSelectWorkout = (workout) => {
     setSelectedWorkouts((prev) => ({
       ...prev,
-      [selectedDay]: workout,
+      [selectedDay]: {
+        id: workout.id,
+        name: workout.name,
+      },
     }));
     setModalVisible(false);
   };
 
-  const handleSavePlan = () => {
-    const plan = {
-      name: planName,
-      //workouts: selectedWorkouts,
-    };
-    console.log(plan);
-    navigation.goBack();
-  };
 
   const handleDayPress = (day) => {
     setSelectedDay(day);
@@ -74,18 +69,51 @@ const CreatePlanScreen = ({ navigation, route }) => {
     );
   };
 
-  useEffect(() => {
+  const savePlan = () => {
+    console.log('Saving plan:', planName, selectedWorkouts);
+
+    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = [];
+
+    const completeWorkouts = {};
+    daysOfWeek.forEach(day => {
+      completeWorkouts[day] = selectedWorkouts[day] || { rest: true };
+      days.push({
+        day,
+        workout: selectedWorkouts[day] ? selectedWorkouts[day].name : 'Rest Day',
+        restDay: !selectedWorkouts[day],
+      });
+    });
+
+    const plan = {
+      name: planName,
+      days: days,
+    };
+    console.log('Plan to save:', plan);
+
+    handleSavePlan(plan);
+    navigation.goBack();
+  };
+
+  useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <TouchableOpacity
           style={styles.createNewPlanButton}
-          onPress={handleSavePlan}
+          onPress={savePlan}
         >
           <Ionicons name="add-circle-outline" size={24} color={theme.colors.primary} />
         </TouchableOpacity>
       ),
     });
-  }, [navigation, theme]);
+  }, [navigation, theme, planName, selectedWorkouts]);
+
+  useEffect(() => {
+    navigation.setParams({
+      planName,
+      onSave: savePlan,
+    });
+  }, [planName, navigation]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -102,6 +130,12 @@ const CreatePlanScreen = ({ navigation, route }) => {
         keyExtractor={(item) => item}
         renderItem={renderDayItem}
         contentContainerStyle={styles.listContainer}
+      />
+      <Button
+        title="Save Plan"
+        onPress={savePlan}
+        color={theme.colors.primary}
+        disabled={!planName}
       />
 
       <Modal
