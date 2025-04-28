@@ -20,11 +20,9 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [plans, setPlans] = useState([]);
 
-  // Get the current plan passed from PlannerScreen
   const currentPlan = route.params?.onGoBack;
 
   useEffect(() => {
-    // Simulate loading data from an API
     const mockPlans = [
       {
         id: '1',
@@ -119,6 +117,23 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
     route.params?.onSelect(plan);
   };
 
+  const handleCreateNewPlan = () => {
+    navigation.navigate('CreatePlan');
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          style={styles.createNewPlanButton}
+          onPress={handleCreateNewPlan}
+        >
+          <Ionicons name="add-circle-outline" size={24} color={theme.colors.primary} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, theme]);
+
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
       {isLoading ? (
@@ -146,7 +161,6 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
                 source={{ uri: item.image }}
                 style={styles.planImage}
               />
-
               <View style={styles.planInfo}>
                 <Text style={[styles.planTitle, { color: theme.colors.text }]}>{item.title}</Text>
                 <View style={styles.planMeta}>
@@ -179,24 +193,8 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
-  },
-  closeButton: {
-    padding: 4,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  rightPlaceholder: {
-    width: 28, // Same width as back button for alignment
+  createNewPlanButton: {
+    marginRight: 16,
   },
   listContent: {
     padding: 16,
@@ -213,10 +211,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-  },
-  currentPlanItem: {
-    borderWidth: 2,
-    borderColor: '#4263eb',
   },
   planImage: {
     width: 70,
@@ -265,3 +259,4 @@ const styles = StyleSheet.create({
 });
 
 export default PlanSelectionScreen;
+

@@ -6,21 +6,19 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
-// Import screens
 import HomeScreen from './screens/homeScreen';
 import PlannerScreen from './screens/plannerScreen';
 import ProfileScreen from './screens/profileScreen';
 import SettingsScreen from './screens/settingsScreen';
 import CreateWorkoutScreen from './screens/createWorkoutScreen';
 import PlanSelectionScreen from './screens/planSelectionScreen';
+import createPlanScreen from './screens/createPlanScreen';
 
-// Import theme
 import { lightTheme, darkTheme } from './theme';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Stack navigator for the Planner section
 const PlannerStackNavigator = () => {
   const colorScheme = useColorScheme();
   return (
@@ -35,6 +33,7 @@ const PlannerStackNavigator = () => {
       <Stack.Screen name="PlannerMain" component={PlannerScreen} options={{ title: 'Planner' }} />
       <Stack.Screen name="CreateWorkout" component={CreateWorkoutScreen} options={{ title: 'Create Workout' }} />
       <Stack.Screen name="PlanSelection" component={PlanSelectionScreen} options={{ title: 'Select Plan' }} />
+      <Stack.Screen name="CreatePlan" component={createPlanScreen} options={{ title: 'Create Plan' }} />
     </Stack.Navigator>
   );
 };
