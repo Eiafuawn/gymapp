@@ -9,7 +9,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
-// Import services and styles
 import { fetchTodayWorkout, getMockTodayWorkout } from '../api';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
@@ -20,7 +19,6 @@ const HomeScreen = () => {
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch today's workout from API
   useEffect(() => {
     const loadWorkout = async () => {
       setIsLoading(true);
