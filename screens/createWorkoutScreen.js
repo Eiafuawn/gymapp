@@ -11,12 +11,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Import services and styles
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
-import { fetchBodyParts, fetchExo, fetchExoPerBodyPart } from '../api';
+import { fetchBodyParts, fetchExo, fetchExoPerBodyPart, fetchAutocompleteExercises, fetchExoById } from '../api';
 import Pagination from '../components/paginationComponent';
-import { handleSaveWorkout } from '../api'; // Import your save function
+import { handleSaveWorkout } from '../api';
 
 const CreateWorkoutScreen = ({ route, navigation }) => {
   const { selectedDay, selectedWeek } = route.params || {};
@@ -28,7 +27,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   const [categories, setCategories] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [loadingExercises, setLoadingExercises] = useState(false);
-  const [selectedExerciseIds, setSelectedExerciseIds] = useState([]); // Store only IDs
+  const [selectedExercises, setSelectedExercises] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [workoutName, setWorkoutName] = useState('');
   const exerciseListRef = useRef(null);
@@ -81,43 +80,24 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   }, [activeCategory, currentPage, searchQuery]);
 
   const handlePageChange = (page) => {
-    const timeoutId = setTimeout(() => {
-      if (page !== currentPage) {
-        setCurrentPage(page);
-        if (exerciseListRef.current) {
-          exerciseListRef.current.scrollTo({ y: 0, animated: true });
-        }
+    if (page !== currentPage) {
+      setCurrentPage(page);
+      if (exerciseListRef.current) {
+        exerciseListRef.current.scrollTo({ y: 0, animated: true });
       }
-    }, 500);
-    return () => clearTimeout(timeoutId);
+    }
   };
 
   const handleToggleExercise = (exercise) => {
-    setSelectedExerciseIds(prevIds => {
-      const id = exercise.exerciseId;
-      if (prevIds.includes(id)) {
-        return prevIds.filter(exerciseId => exerciseId !== id);
+    setSelectedExercises(prevExercises => {
+      const exists = prevExercises.find(e => e.exerciseId === exercise.exerciseId);
+      if (exists) {
+        return prevExercises.filter(e => e.exerciseId !== exercise.exerciseId);
       } else {
-        return [...prevIds, id];
+        return [...prevExercises, exercise];
       }
     });
   };
-
-  const getSelectedExercises = () => {
-    const allExercisesMap = new Map();
-
-    exercises.forEach(exercise => {
-      if (exercise.exerciseId) {
-        allExercisesMap.set(exercise.exerciseId, exercise);
-      }
-    });
-
-    return selectedExerciseIds
-      .map(exerciseId => allExercisesMap.get(exerciseId))
-      .filter(exercise => exercise !== undefined);
-  };
-
-  const selectedExercises = getSelectedExercises();
 
   const saveWorkout = () => {
     handleSaveWorkout({
@@ -132,8 +112,25 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   };
 
   const isExerciseSelected = (exercise) => {
-    return selectedExerciseIds.includes(exercise.exerciseId);
+    return selectedExercises.some(e => e.exerciseId === exercise.exerciseId);
   };
+
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    if (query.length < 2) return;
+    if (!query.trim()) {
+      setExercises([]);
+      return;
+    }
+    const response = await fetchAutocompleteExercises(query);
+    const detailedExercises = await Promise.all(
+      response.data.map(item => fetchExoById(item.exerciseId))
+    );
+    const exercisesArray = detailedExercises.map(item => item.data);
+    setExercises(exercisesArray);
+    setTotalPages(1);
+  };
+
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
@@ -170,7 +167,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
 
           <View style={styles.selectedCountContainer}>
             <Text style={[styles.selectedCountText, { color: theme.colors.text }]}>
-              {selectedExerciseIds.length} exercise{selectedExerciseIds.length !== 1 ? 's' : ''} selected
+              {selectedExercises.length} exercise{selectedExercises.length !== 1 ? 's' : ''} selected
             </Text>
           </View>
         </View>
@@ -191,12 +188,12 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
             <TextInput
               style={[styles.searchInput, { color: theme.colors.text }]}
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={handleSearch}
               placeholder="Search exercises..."
               placeholderTextColor={theme.colors.textSecondary}
             />
             {searchQuery !== '' && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <TouchableOpacity onPress={() => handleSearch()}>
                 <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             )}
@@ -215,7 +212,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
                 ]}
                 onPress={() => {
                   setActiveCategory(category);
-                  setCurrentPage(1); // Reset to first page when changing category
+                  setCurrentPage(1);
                 }}
               >
                 <Text
@@ -256,7 +253,10 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
                     <View style={styles.exerciseInfo}>
                       <Text style={[globalStyles.itemTitle, { color: theme.colors.text }]}>{exercise.name}</Text>
                       <Text style={[globalStyles.itemSubtitle, { color: theme.colors.text }]}>
-                        {exercise.bodyPart} • {exercise.equipment || 'No equipment'}
+                        {exercise.bodyParts?.join(', ') || 'No body part'}
+                      </Text>
+                      <Text style={[globalStyles.itemSubtitle, { color: theme.colors.secondaryText }]}>
+                        {exercise.equipments?.join(', ') || 'No equipment'}
                       </Text>
                     </View>
                     <View style={styles.checkboxContainer}>
@@ -306,8 +306,11 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
                     <Text style={[styles.selectedExerciseName, { color: theme.colors.text }]}>
                       {index + 1}. {exercise.name}
                     </Text>
-                    <Text style={[styles.selectedExerciseDetails, { color: theme.colors.textSecondary }]}>
-                      {exercise.bodyPart} • {exercise.equipment || 'No equipment'}
+                    <Text style={[globalStyles.itemSubtitle, { color: theme.colors.text }]}>
+                      {exercise.bodyParts?.join(', ') || 'No body part'}
+                    </Text>
+                    <Text style={[globalStyles.itemSubtitle, { color: theme.colors.secondaryText }]}>
+                      {exercise.equipments?.join(', ') || 'No equipment'}
                     </Text>
                   </View>
                   <TouchableOpacity
