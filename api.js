@@ -13,13 +13,75 @@ export const handleSaveWorkout = (workout) => {
     });
 }
 
+export const handleSavePlan = (plan) => {
+  push(ref(database, 'workoutPlans/'), plan)
+    .then(() => {
+      console.log('Plan saved successfully');
+    })
+    .catch((error) => {
+      console.error('Error saving plan:', error);
+    });
+}
+
+export const fetchPlans = async () => {
+  return new Promise((resolve, reject) => {
+    try {
+      const itemsRef = ref(database, 'workoutPlans/');
+      onValue(
+        itemsRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const workoutPlans = Object.entries(data).map(([key, value]) => ({
+              id: key,
+              ...value,
+            }));
+            console.log('Fetched workout plans inside onValue:', workoutPlans);
+            resolve(workoutPlans);
+          } else {
+            resolve([]);
+          }
+        },
+        (error) => {
+          console.error('Error fetching plans:', error);
+          reject(error);
+        }
+      );
+    } catch (error) {
+      console.error('Error setting up fetchPlans:', error);
+      reject(error);
+    }
+  });
+};
+
+
+export const fetchWorkouts = async () => {
+  try {
+    const itemsRef = ref(database, 'workouts/');
+    let workouts = [];
+    onValue(itemsRef, (snapshot) => {
+      const data = snapshot.val();
+      const workoutKeys = Object.keys(data);
+      workouts.push(...workoutKeys.map((key) => ({
+        id: key,
+        ...data[key],
+      })));
+    });
+    return workouts;
+  } catch (error) {
+    console.error('Error fetching workouts:', error);
+  }
+}
+
+
 export const fetchTodayWorkout = async () => {
   try {
     const response = await fetch('your-api-url/today-workout');
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching today\'s workout:', error); return getMockTodayWorkout();
+    console.error('Error fetching today\'s workout:', error); 
+    return getMockTodayWorkout();
   }
 };
 
@@ -66,7 +128,7 @@ export const fetchExo = async (page, search) => {
   try {
     let response;
     if (page && !search) {
-      response = await fetch(`https://exercisedb-api.vercel.app/api/v1/exercises?offset=${(page-1) * 10}&limit=10`);
+      response = await fetch(`https://exercisedb-api.vercel.app/api/v1/exercises?offset=${(page - 1) * 10}&limit=10`);
     } else if (search && !page) {
       response = await fetch(`https://exercisedb-api.vercel.app/api/v1/autocomplete?search=${search}`);
     } else if (search && page) {
@@ -112,26 +174,6 @@ export const fetchBodyParts = async () => {
   } catch (error) {
     console.error('Error fetching body parts:', error);
     return [];
-  }
-}
-
-export const fetchWorkouts = async () => {
-  try {
-    const itemsRef = ref(database, 'workouts/');
-    let workouts = [];
-    onValue(itemsRef, (snapshot) => {
-      const data = snapshot.val();
-      const workoutKeys = Object.keys(data);
-      console.log('Workout keys:', workoutKeys);
-      workouts.push(...workoutKeys.map((key) => ({
-        id: key,
-        ...data[key],
-      })));
-    });
-    return workouts;
-  } catch (error) {
-    console.error('Error fetching workouts:', error);
-    return getMockWorkoutPlan();
   }
 }
 
