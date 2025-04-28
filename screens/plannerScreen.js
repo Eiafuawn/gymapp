@@ -13,14 +13,15 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
-import { fetchPlans } from '../api';
+import { fetchPlans, activatePlan, getActivePlan } from '../api';
 
 const PlannerScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
   const [plan, setPlan] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeWeek, setActiveWeek] = useState(1);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isPlanActive, setIsPlanActive] = useState(false);
 
   useEffect(() => {
     if (route.params?.selectedPlan) {
@@ -35,6 +36,12 @@ const PlannerScreen = ({ navigation, route }) => {
         if (plans.length > 0) {
           const defaultPlan = plans[0];
           setPlan(defaultPlan);
+          const activePlan = await getActivePlan();
+          if (String(activePlan) === String(plan.id)) {
+            setIsPlanActive(true);
+          } else {
+            setIsPlanActive(false);
+          }
         } else {
           console.log('No plans found.');
         }
@@ -47,9 +54,26 @@ const PlannerScreen = ({ navigation, route }) => {
 
     if (!route.params?.selectedPlan) {
       loadDefaultPlan();
-      console.log('Loading default plan on initial load');
     }
   }, []);
+
+  useEffect(() => {
+    const activePlan = async () => {
+      try {
+        const activePlan = await getActivePlan();
+        if (String(activePlan) === String(plan.id)) {
+          setIsPlanActive(true);
+        } else {
+          setIsPlanActive(false);
+          }
+      } catch (error) {
+        console.error('Error fetching active plan:', error);
+      }
+    };
+      activePlan();
+    }, [plan]);
+
+
 
 
   const navigateToExerciseScreen = () => {
@@ -66,6 +90,22 @@ const PlannerScreen = ({ navigation, route }) => {
       },
     });
   };
+
+const togglePlanActive = async () => {
+  if (!plan?.id) return;
+
+  try {
+    setIsUpdating(true);
+
+    await activatePlan(plan.id);
+    setIsPlanActive((prev) => !prev);
+
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setIsUpdating(false);
+  }
+};
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
@@ -104,8 +144,26 @@ const PlannerScreen = ({ navigation, route }) => {
           </View>
         ) : (
           <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
-            <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Current Plan</Text>
-            <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>{plan.name}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Current Plan</Text>
+
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center' }}
+                onPress={() => togglePlanActive()}
+              >
+                <Ionicons
+                  name={isPlanActive ? "checkbox-outline" : "square-outline"}
+                  size={24}
+                  color={theme.colors.primary}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={{ color: theme.colors.primary, fontWeight: '600' }}>
+                  {isPlanActive ? 'Active' : 'Inactive'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text, marginTop: 8 }]}>{plan.name}</Text>
 
             {plan.category && (
               <View style={styles.planMetaContainer}>
@@ -125,32 +183,6 @@ const PlannerScreen = ({ navigation, route }) => {
                 )}
               </View>
             )}
-
-            <View style={styles.weekSelector}>
-              {[1, 2, 3, 4].map(week => (
-                <TouchableOpacity
-                  key={week}
-                  style={[
-                    styles.weekButton,
-                    week === activeWeek ?
-                      [styles.weekButtonActive, { backgroundColor: theme.colors.primary }] :
-                      { borderColor: theme.colors.border }
-                  ]}
-                  onPress={() => setActiveWeek(week)}
-                >
-                  <Text
-                    style={[
-                      styles.weekButtonText,
-                      week === activeWeek ?
-                        styles.weekButtonTextActive :
-                        { color: theme.colors.text }
-                    ]}
-                  >
-                    Week {week}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
 
             <View style={styles.daysList}>
               {plan.days.map((day, index) => (

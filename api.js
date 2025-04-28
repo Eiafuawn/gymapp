@@ -1,5 +1,5 @@
 import { app } from './firebaseConfig';
-import { getDatabase, ref, push, onValue } from "firebase/database";
+import { getDatabase, ref, push, onValue, update } from "firebase/database";
 
 const database = getDatabase(app);
 
@@ -23,6 +23,46 @@ export const handleSavePlan = (plan) => {
     });
 }
 
+export const activatePlan = async (selectedPlanId) => {
+  try {
+    const updates = {
+      [`activePlanId`]: selectedPlanId,
+    };
+
+    await update(ref(database), updates);
+
+    console.log('Successfully updated active plan!');
+  } catch (error) {
+    console.error('Failed to update active plan:', error);
+  }
+};
+
+export const getActivePlan = async () => {
+  return new Promise((resolve, reject) => {
+    try {
+      const itemsRef = ref(database, 'activePlanId/');
+      onValue(
+        itemsRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            resolve(data);
+          } else {
+            resolve(null);
+          }
+        },
+        (error) => {
+          console.error('Error fetching active plan:', error);
+          reject(error);
+        }
+      );
+    } catch (error) {
+      console.error('Error setting up getActivePlan:', error);
+      reject(error);
+    }
+  });
+}
+
 export const fetchPlans = async () => {
   return new Promise((resolve, reject) => {
     try {
@@ -32,11 +72,13 @@ export const fetchPlans = async () => {
         (snapshot) => {
           const data = snapshot.val();
           if (data) {
-            const workoutPlans = Object.entries(data).map(([key, value]) => ({
-              id: key,
-              ...value,
-            }));
-            console.log('Fetched workout plans inside onValue:', workoutPlans);
+            const workoutPlans = Object.keys(data).map((key) => {
+              const plan = {
+                id: key,
+                ...data[key],
+              };
+              return plan;
+            });
             resolve(workoutPlans);
           } else {
             resolve([]);
@@ -53,7 +95,6 @@ export const fetchPlans = async () => {
     }
   });
 };
-
 
 export const fetchWorkouts = async () => {
   try {
@@ -80,7 +121,7 @@ export const fetchTodayWorkout = async () => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching today\'s workout:', error); 
+    console.error('Error fetching today\'s workout:', error);
     return getMockTodayWorkout();
   }
 };
