@@ -121,7 +121,12 @@ export const fetchWorkouts = async () => {
     let workouts = [];
     onValue(itemsRef, (snapshot) => {
       const data = snapshot.val();
-      workouts = data ? Object.values(data) : [];
+      const workoutKeys = Object.keys(data);
+      console.log('Workout keys:', workoutKeys);
+      workouts.push(...workoutKeys.map((key) => ({
+        id: key,
+        ...data[key],
+      })));
     });
     return workouts;
   } catch (error) {
