@@ -34,18 +34,6 @@ export const fetchWorkoutPlan = async () => {
   }
 };
 
-export const searchWorkouts = async (query, category = 'all') => {
-  try {
-    // Replace with your actual API endpoint
-    const response = await fetch(`your-api-url/workouts?query=${query}&category=${category}`);
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error searching workouts:', error);
-    return [];
-  }
-};
-
 export const getMockTodayWorkout = () => {
   return {
     title: "Full Body Strength",
@@ -103,6 +91,19 @@ export const fetchExoPerBodyPart = async (bodypartName) => {
   }
 }
 
+export const fetchExoById = async (id) => {
+  console.log('Fetching exercise by ID:', id);
+  try {
+    const response = await fetch(`https://exercisedb-api.vercel.app/api/v1/exercises/${id}`);
+    const data = await response.json();
+    console.log('Exercise data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching exercise by ID:', error);
+    return null;
+  }
+}
+
 export const fetchBodyParts = async () => {
   try {
     const response = await fetch('https://exercisedb-api.vercel.app/api/v1/bodyparts');
@@ -128,3 +129,14 @@ export const fetchWorkouts = async () => {
     return getMockWorkoutPlan();
   }
 }
+
+export const fetchAutocompleteExercises = async (query) => {
+  try {
+    const response = await fetch(`https://exercisedb-api.vercel.app/api/v1/exercises/autocomplete?search=${encodeURIComponent(query)}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching autocomplete exercises:', error);
+  }
+};
+
