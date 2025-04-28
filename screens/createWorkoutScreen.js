@@ -172,11 +172,9 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        {/* Exercise selection */}
         <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground, marginTop: 16 }]}>
           <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Select Exercises</Text>
 
-          {/* Search bar */}
           <View style={[
             styles.searchContainer,
             {
