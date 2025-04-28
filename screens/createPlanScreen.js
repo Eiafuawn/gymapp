@@ -131,13 +131,6 @@ const CreatePlanScreen = ({ navigation, route }) => {
         renderItem={renderDayItem}
         contentContainerStyle={styles.listContainer}
       />
-      <Button
-        title="Save Plan"
-        onPress={savePlan}
-        color={theme.colors.primary}
-        disabled={!planName}
-      />
-
       <Modal
         visible={modalVisible}
         animationType="slide"
