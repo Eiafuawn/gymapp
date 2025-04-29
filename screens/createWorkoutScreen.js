@@ -94,17 +94,25 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
       if (exists) {
         return prevExercises.filter(e => e.exerciseId !== exercise.exerciseId);
       } else {
-        return [...prevExercises, exercise];
+        return [...prevExercises, { ...exercise, sets: '', reps: '', restTime: '' }];
       }
     });
   };
+
+  const updateExerciseField = (index, field, value) => {
+    setSelectedExercises(prev => {
+      const updated = [...prev];
+      updated[index][field] = value;
+      return updated;
+    });
+  };
+
 
   const saveWorkout = () => {
     handleSaveWorkout({
       name: workoutName,
       exercises: selectedExercises,
       day: selectedDay,
-      week: selectedWeek
     });
 
 
@@ -227,7 +235,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
             ))}
           </ScrollView>
 
-          {/* Exercise list */}
           <ScrollView ref={exerciseListRef} style={styles.exercisesList}>
             {loadingExercises ? (
               <View style={styles.loadingExercises}>
@@ -310,7 +317,37 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
                     <Text style={[globalStyles.itemSubtitle, { color: theme.colors.secondaryText }]}>
                       {exercise.equipments?.join(', ') || 'No equipment'}
                     </Text>
+
+                    {/* Add these input fields */}
+                    <View style={{ flexDirection: 'row', marginTop: 8, gap: 8 }}>
+                      {['Sets', 'Reps', 'Rest (s)'].map((label, i) => (
+                        <View key={label} style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 12, color: theme.colors.textSecondary }}>{label}</Text>
+                          <TextInput
+                            keyboardType="numeric"
+                            value={
+                              i === 0 ? exercise.sets :
+                                i === 1 ? exercise.reps :
+                                  exercise.restTime
+                            }
+                            onChangeText={(text) =>
+                              updateExerciseField(index, i === 0 ? 'sets' : i === 1 ? 'reps' : 'restTime', text)
+                            }
+                            style={{
+                              height: 36,
+                              borderWidth: 1,
+                              borderColor: theme.colors.border,
+                              borderRadius: 6,
+                              paddingHorizontal: 8,
+                              color: theme.colors.text,
+                              backgroundColor: theme.colors.inputBackground
+                            }}
+                          />
+                        </View>
+                      ))}
+                    </View>
                   </View>
+
                   <TouchableOpacity
                     style={styles.removeButton}
                     onPress={() => handleToggleExercise(exercise)}
@@ -320,6 +357,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
                 </View>
               ))}
             </View>
+
           </View>
         )}
         <TouchableOpacity
