@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
-import { fetchPlans, activatePlan, getActivePlan } from '../api';
+import { fetchPlans, activatePlan, getActivePlanId } from '../api';
 
 const PlannerScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
@@ -36,7 +36,7 @@ const PlannerScreen = ({ navigation, route }) => {
         if (plans.length > 0) {
           const defaultPlan = plans[0];
           setPlan(defaultPlan);
-          const activePlan = await getActivePlan();
+          const activePlan = await getActivePlanId();
           if (String(activePlan) === String(plan.id)) {
             setIsPlanActive(true);
           } else {
@@ -60,7 +60,7 @@ const PlannerScreen = ({ navigation, route }) => {
   useEffect(() => {
     const activePlan = async () => {
       try {
-        const activePlan = await getActivePlan();
+        const activePlan = await getActivePlanId();
         if (String(activePlan) === String(plan.id)) {
           setIsPlanActive(true);
         } else {

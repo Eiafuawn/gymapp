@@ -37,7 +37,7 @@ export const activatePlan = async (selectedPlanId) => {
   }
 };
 
-export const getActivePlan = async () => {
+export const getActivePlanId = async () => {
   return new Promise((resolve, reject) => {
     try {
       const itemsRef = ref(database, 'activePlanId/');
