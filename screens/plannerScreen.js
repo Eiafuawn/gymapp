@@ -79,7 +79,6 @@ const PlannerScreen = ({ navigation, route }) => {
   const navigateToExerciseScreen = () => {
     navigation.navigate('CreateWorkout', {
       selectedDay: null,
-      selectedWeek: activeWeek
     });
   };
 
@@ -195,7 +194,6 @@ const togglePlanActive = async () => {
                   onPress={() => {
                     navigation.navigate('CreateWorkout', {
                       selectedDay: day.day,
-                      selectedWeek: activeWeek
                     });
                   }}
                 >
@@ -215,27 +213,6 @@ const togglePlanActive = async () => {
                   />
                 </TouchableOpacity>
               ))}
-            </View>
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[
-                  globalStyles.buttonOutline,
-                  styles.editButton,
-                  {
-                    borderColor: theme.colors.primary,
-                    borderWidth: 2,
-                  }
-                ]}
-                onPress={() => console.log('Edit plan')}
-              >
-                <View style={styles.buttonContent}>
-                  <Ionicons name="create-outline" size={18} color={theme.colors.primary} style={styles.buttonIcon} />
-                  <Text style={[globalStyles.buttonTextOutline, { color: theme.colors.primary, fontWeight: '600' }]}>
-                    Edit Plan
-                  </Text>
-                </View>
-              </TouchableOpacity>
             </View>
           </View>
         )}
