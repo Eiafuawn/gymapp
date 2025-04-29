@@ -63,6 +63,37 @@ export const getActivePlanId = async () => {
   });
 }
 
+export const getActivePlan = async () => {
+  const activePlanId = await getActivePlanId();
+  return new Promise((resolve, reject) => {
+    try {
+      const itemsRef = ref(database, `workoutPlans/${activePlanId}`);
+      onValue(
+        itemsRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const workoutPlan = {
+              id: activePlanId,
+              ...data,
+            };
+            resolve(workoutPlan);
+          } else {
+            resolve(null);
+          }
+        },
+        (error) => {
+          console.error('Error fetching active plan:', error);
+          reject(error);
+        }
+      );
+    } catch (error) {
+      console.error('Error setting up getActivePlan:', error);
+      reject(error);
+    }
+  });
+}
+
 export const fetchPlans = async () => {
   return new Promise((resolve, reject) => {
     try {
@@ -98,19 +129,34 @@ export const fetchPlans = async () => {
 
 export const fetchWorkouts = async () => {
   try {
-    const itemsRef = ref(database, 'workouts/');
-    let workouts = [];
-    onValue(itemsRef, (snapshot) => {
-      const data = snapshot.val();
-      const workoutKeys = Object.keys(data);
-      workouts.push(...workoutKeys.map((key) => ({
-        id: key,
-        ...data[key],
-      })));
+    return new Promise((resolve, reject) => {
+      const itemsRef = ref(database, 'workouts/');
+      onValue(
+        itemsRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const workouts = Object.keys(data).map((key) => {
+              const workout = {
+                id: key,
+                ...data[key],
+              };
+              return workout;
+            });
+            resolve(workouts);
+          } else {
+            resolve([]);
+          }
+        },
+        (error) => {
+          console.error('Error fetching workouts:', error);
+          reject(error);
+        }
+      );
     });
-    return workouts;
   } catch (error) {
-    console.error('Error fetching workouts:', error);
+    console.error('Error setting up fetchWorkouts:', error);
+    throw error;
   }
 }
 

@@ -40,10 +40,7 @@ const CreatePlanScreen = ({ navigation, route }) => {
   const handleSelectWorkout = (workout) => {
     setSelectedWorkouts((prev) => ({
       ...prev,
-      [selectedDay]: {
-        id: workout.id,
-        name: workout.name,
-      },
+      [selectedDay]: workout,
     }));
     setModalVisible(false);
   };
@@ -80,7 +77,7 @@ const CreatePlanScreen = ({ navigation, route }) => {
       completeWorkouts[day] = selectedWorkouts[day] || { rest: true };
       days.push({
         day,
-        workout: selectedWorkouts[day] ? selectedWorkouts[day].name : 'Rest Day',
+        workout: selectedWorkouts[day] ? selectedWorkouts[day] : 'Rest Day',
         restDay: !selectedWorkouts[day],
       });
     });

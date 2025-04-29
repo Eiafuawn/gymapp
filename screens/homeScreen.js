@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 
-import { fetchTodayWorkout, getMockTodayWorkout } from '../api';
+import { fetchTodayWorkout, getMockTodayWorkout, getActivePlan } from '../api';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 
@@ -23,8 +23,11 @@ const HomeScreen = () => {
     const loadWorkout = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchTodayWorkout();
-        setTodayWorkout(data);
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDayName = dayNames[new Date().getDay()];
+        const activePlan = await getActivePlan();
+        const workoutPlan = activePlan.days.find(day => day.day === currentDayName);
+        setTodayWorkout(workoutPlan);
       } catch (error) {
         console.error('Error loading workout:', error);
         setTodayWorkout(getMockTodayWorkout());
@@ -61,42 +64,51 @@ const HomeScreen = () => {
         </View>
 
         <Text style={[globalStyles.sectionTitle, { color: theme.colors.text }]}>Today's Workout</Text>
-
         {isLoading ? (
           <Text style={{ color: theme.colors.text }}>Loading your workout...</Text>
-        ) : (
-          <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
-            <View style={styles.workoutHeader}>
-              <View>
-                <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>{todayWorkout.title}</Text>
-                <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>{todayWorkout.duration}</Text>
-              </View>
-              <TouchableOpacity
-                style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.primary }]}
-                onPress={() => console.log('Start workout')}
-              >
-                <Text style={globalStyles.buttonTextPrimary}>START</Text>
-              </TouchableOpacity>
+        ) : todayWorkout ? (
+          todayWorkout.restDay ? (
+            <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
+              <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Rest Day</Text>
+              <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>Take a break and recover!</Text>
             </View>
-
-            <View style={styles.exerciseList}>
-              {todayWorkout.exercises.map((exercise, index) => (
-                <View key={index} style={[
-                  globalStyles.listItem,
-                  index < todayWorkout.exercises.length - 1 && globalStyles.listItemDivider
-                ]}>
-                  <View>
-                    <Text style={[globalStyles.itemTitle, { color: theme.colors.text }]}>{exercise.name}</Text>
-                    <Text style={[globalStyles.itemSubtitle, { color: theme.colors.text }]}>
-                      {exercise.sets} sets • {exercise.reps} reps • {exercise.rest} rest
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={theme.colors.text} />
+          ) : (
+            <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
+              <View style={styles.workoutHeader}>
+                <View>
+                  <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>{todayWorkout.name}</Text>
+                  <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>{todayWorkout.duration}</Text>
                 </View>
-              ))}
+                <TouchableOpacity
+                  style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.primary }]}
+                  onPress={() => console.log('Start workout')}
+                >
+                  <Text style={globalStyles.buttonTextPrimary}>START</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.exerciseList}>
+                {todayWorkout.exercises.map((exercise, index) => (
+                  <View key={index} style={[
+                    globalStyles.listItem,
+                    index < todayWorkout.exercises.length - 1 && globalStyles.listItemDivider
+                  ]}>
+                    <View>
+                      <Text style={[globalStyles.itemTitle, { color: theme.colors.text }]}>{exercise.name}</Text>
+                      <Text style={[globalStyles.itemSubtitle, { color: theme.colors.text }]}>
+                        {exercise.sets} sets • {exercise.reps} reps • {exercise.rest} rest
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={theme.colors.text} />
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
+          )
+        ) : (
+          <Text style={{ color: theme.colors.text }}>No workout found.</Text>
         )}
+
 
         <Text style={[globalStyles.sectionTitle, { color: theme.colors.text }]}>Progress</Text>
 

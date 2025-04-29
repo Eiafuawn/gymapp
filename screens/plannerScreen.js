@@ -205,7 +205,7 @@ const togglePlanActive = async () => {
                       globalStyles.itemSubtitle,
                       { color: !day.restDay ? theme.colors.text : theme.colors.border }
                     ]}>
-                      {!day.restDay ? day.workout : 'Rest Day'}
+                      {!day.restDay ? day.workout.name : 'Rest Day'}
                     </Text>
                   </View>
                   <Ionicons
