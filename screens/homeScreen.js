@@ -32,12 +32,21 @@ const HomeScreen = () => {
         console.error('Error loading workout:', error);
         setTodayWorkout(getMockTodayWorkout());
       } finally {
-        setIsLoading(false);
+        if (todayWorkout !== null) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadWorkout();
   }, []);
+
+  useEffect(() => {
+    if (todayWorkout !== null) {
+      console.log('Updated todayWorkout:', todayWorkout);
+      setIsLoading(false);
+    }
+  }, [todayWorkout]);
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
@@ -76,8 +85,7 @@ const HomeScreen = () => {
             <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
               <View style={styles.workoutHeader}>
                 <View>
-                  <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>{todayWorkout.name}</Text>
-                  <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>{todayWorkout.duration}</Text>
+                  <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>{todayWorkout.workout.name}</Text>
                 </View>
                 <TouchableOpacity
                   style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.primary }]}
@@ -88,10 +96,10 @@ const HomeScreen = () => {
               </View>
 
               <View style={styles.exerciseList}>
-                {todayWorkout.exercises.map((exercise, index) => (
+                {todayWorkout.workout.exercises.map((exercise, index) => (
                   <View key={index} style={[
                     globalStyles.listItem,
-                    index < todayWorkout.exercises.length - 1 && globalStyles.listItemDivider
+                    index < todayWorkout.workout.exercises.length - 1 && globalStyles.listItemDivider
                   ]}>
                     <View>
                       <Text style={[globalStyles.itemTitle, { color: theme.colors.text }]}>{exercise.name}</Text>
