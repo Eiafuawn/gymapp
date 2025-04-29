@@ -1,5 +1,5 @@
 import { app } from './firebaseConfig';
-import { getDatabase, ref, push, onValue, update } from "firebase/database";
+import { getDatabase, ref, push, onValue, update, remove } from "firebase/database";
 
 const database = getDatabase(app);
 
@@ -13,6 +13,17 @@ export const handleSaveWorkout = (workout) => {
     });
 }
 
+export const handleDeleteWorkout = (workoutId) => {
+  const workoutRef = ref(database, `workouts/${workoutId}`);
+  remove(workoutRef)
+    .then(() => {
+      console.log('Workout deleted successfully');
+    })
+    .catch((error) => {
+      console.error('Error deleting workout:', error);
+    });
+}
+
 export const handleSavePlan = (plan) => {
   push(ref(database, 'workoutPlans/'), plan)
     .then(() => {
@@ -20,6 +31,16 @@ export const handleSavePlan = (plan) => {
     })
     .catch((error) => {
       console.error('Error saving plan:', error);
+    });
+}
+export const handleDeletePlan = (planId) => {
+  const planRef = ref(database, `workoutPlans/${planId}`);
+  remove(planRef)
+    .then(() => {
+      console.log('Plan deleted successfully');
+    })
+    .catch((error) => {
+      console.error('Error deleting plan:', error);
     });
 }
 

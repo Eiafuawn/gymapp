@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
-import { fetchPlans } from '../api';
+import { fetchPlans, handleDeletePlan } from '../api';
 
 const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const colorScheme = useColorScheme();
@@ -59,6 +59,15 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
     });
   }, [navigation, theme]);
 
+  const deletePlan = async (planId) => {
+    try {
+      await handleDeletePlan(planId);
+      setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== planId));
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+    }
+  }
+
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
       {isLoading ? (
@@ -103,6 +112,12 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
                   </View>
                 </View>
               </View>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => deletePlan(item.id)}
+              >
+                <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
+              </TouchableOpacity>
 
               {currentPlan?.id === item.id && (
                 <View style={[styles.checkmark, { backgroundColor: theme.colors.primary }]}>
@@ -180,6 +195,10 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
+  },
+  deleteButton: {
+    marginLeft: 12,
+    padding: 4,
   },
 });
 
