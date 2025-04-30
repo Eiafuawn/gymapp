@@ -67,8 +67,6 @@ const CreatePlanScreen = ({ navigation, route }) => {
   };
 
   const savePlan = () => {
-    console.log('Saving plan:', planName, selectedWorkouts);
-
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const days = [];
 
@@ -86,7 +84,6 @@ const CreatePlanScreen = ({ navigation, route }) => {
       name: planName,
       days: days,
     };
-    console.log('Plan to save:', plan);
 
     handleSavePlan(plan);
     navigation.goBack();
