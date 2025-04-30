@@ -1,3 +1,5 @@
+// Modified ProfileScreen with theme toggle functionality
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -13,21 +15,26 @@ import {
   Modal,
   Platform
 } from 'react-native';
-// import { getUserProfile, updateUserProfile } from '..api/userProfile'; // Assuming these functions exist
+// import { getUserProfile, updateUserProfile } from '../api/userProfile'; // Assuming these functions exist
+import { useTheme } from '../theme'; // Import the theme hook
 
 const ProfileScreen = ({ navigation }) => {
+  // Use the theme context
+  const { theme, isDarkMode, toggleTheme } = useTheme();
+  
+  // Initial state with mock data
   const [profile, setProfile] = useState({
     name: 'Alex Johnson',
     age: 28,
     gender: 'Male',
-    height: 175,
-    weight: 70,
-    bodyFat: 18,
+    height: 175, // in cm
+    weight: 70, // in kg
+    bodyFat: 18, // in percentage
     goal: 'Build muscle',
     activityLevel: 'Moderate',
-    profileImage: 'https://reactnative.dev/img/tiny_logo.png',
+    profileImage: 'https://reactnative.dev/img/tiny_logo.png', // placeholder
     notifications: true,
-    units: 'metric'
+    units: 'metric' // metric or imperial
   });
   
   const [isLoading, setIsLoading] = useState(true);
@@ -35,13 +42,20 @@ const ProfileScreen = ({ navigation }) => {
   const [editableProfile, setEditableProfile] = useState({...profile});
   const [isSaving, setIsSaving] = useState(false);
   
+  // Goals available in the app
   const fitnessGoals = ['Lose weight', 'Build muscle', 'Improve endurance', 'General fitness'];
   const activityLevels = ['Sedentary', 'Light', 'Moderate', 'Active', 'Very active'];
 
+  // Mock function to fetch user profile
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
         setIsLoading(true);
+        // In a real app, fetch from API
+        // const data = await getUserProfile();
+        // setProfile(data);
+        
+        // Simulate API call
         setTimeout(() => {
           setIsLoading(false);
         }, 1000);
@@ -57,6 +71,10 @@ const ProfileScreen = ({ navigation }) => {
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
+      // In a real app, send to API
+      // await updateUserProfile(editableProfile);
+      
+      // Simulate API call
       setTimeout(() => {
         setProfile(editableProfile);
         setIsEditing(false);
@@ -71,8 +89,10 @@ const ProfileScreen = ({ navigation }) => {
 
   const toggleEditMode = () => {
     if (isEditing) {
+      // Discard changes
       setEditableProfile({...profile});
     } else {
+      // Enter edit mode
       setEditableProfile({...profile});
     }
     setIsEditing(!isEditing);
@@ -82,6 +102,7 @@ const ProfileScreen = ({ navigation }) => {
     if (profile.units === 'metric') {
       return `${profile.height} cm`;
     } else {
+      // Convert cm to feet and inches
       const totalInches = profile.height / 2.54;
       const feet = Math.floor(totalInches / 12);
       const inches = Math.round(totalInches % 12);
@@ -93,17 +114,20 @@ const ProfileScreen = ({ navigation }) => {
     if (profile.units === 'metric') {
       return `${profile.weight} kg`;
     } else {
+      // Convert kg to lbs
       const lbs = Math.round(profile.weight * 2.20462);
       return `${lbs} lbs`;
     }
   };
 
+  // Calculate BMI as a fitness metric
   const calculateBMI = () => {
     const heightInMeters = profile.height / 100;
     const bmi = profile.weight / (heightInMeters * heightInMeters);
     return bmi.toFixed(1);
   };
 
+  // Calculate daily calorie needs (basic BMR using Mifflin-St Jeor)
   const calculateCalories = () => {
     let bmr;
     if (profile.gender === 'Male') {
@@ -112,6 +136,7 @@ const ProfileScreen = ({ navigation }) => {
       bmr = 10 * profile.weight + 6.25 * profile.height - 5 * profile.age - 161;
     }
     
+    // Activity multipliers
     const activityMultipliers = {
       'Sedentary': 1.2,
       'Light': 1.375,
@@ -124,10 +149,14 @@ const ProfileScreen = ({ navigation }) => {
     return Math.round(bmr * multiplier);
   };
 
+  // Create styles with the current theme
+  const styles = createStyles(theme);
+
+  // Loading state
   if (isLoading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4A6CF7" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </SafeAreaView>
     );
@@ -136,6 +165,7 @@ const ProfileScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header with profile image and username */}
         <View style={styles.header}>
           <View style={styles.profileImageContainer}>
             <Image 
@@ -156,6 +186,7 @@ const ProfileScreen = ({ navigation }) => {
                 onChangeText={(text) => setEditableProfile({...editableProfile, name: text})}
                 style={styles.nameInput}
                 placeholder="Your Name"
+                placeholderTextColor={theme.colors.textSecondary}
               />
             ) : (
               <Text style={styles.userName}>{profile.name}</Text>
@@ -173,6 +204,7 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         
+        {/* Key metrics summary */}
         <View style={styles.metricsContainer}>
           <View style={styles.metricItem}>
             <Text style={styles.metricValue}>{getFormattedWeight()}</Text>
@@ -194,6 +226,7 @@ const ProfileScreen = ({ navigation }) => {
           </View>
         </View>
         
+        {/* Fitness Goals */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Fitness Goal</Text>
           {isEditing ? (
@@ -223,10 +256,12 @@ const ProfileScreen = ({ navigation }) => {
           )}
         </View>
         
+        {/* Profile Details */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Personal Details</Text>
           
           <View style={styles.detailsContainer}>
+            {/* Age */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Age</Text>
               {isEditing ? (
@@ -242,6 +277,7 @@ const ProfileScreen = ({ navigation }) => {
               )}
             </View>
             
+            {/* Gender */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Gender</Text>
               {isEditing ? (
@@ -253,7 +289,10 @@ const ProfileScreen = ({ navigation }) => {
                     ]}
                     onPress={() => setEditableProfile({...editableProfile, gender: 'Male'})}
                   >
-                    <Text style={styles.genderOptionText}>Male</Text>
+                    <Text style={[
+                      styles.genderOptionText,
+                      editableProfile.gender === 'Male' && styles.selectedGenderOptionText
+                    ]}>Male</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={[
@@ -262,7 +301,10 @@ const ProfileScreen = ({ navigation }) => {
                     ]}
                     onPress={() => setEditableProfile({...editableProfile, gender: 'Female'})}
                   >
-                    <Text style={styles.genderOptionText}>Female</Text>
+                    <Text style={[
+                      styles.genderOptionText,
+                      editableProfile.gender === 'Female' && styles.selectedGenderOptionText
+                    ]}>Female</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
                     style={[
@@ -271,7 +313,10 @@ const ProfileScreen = ({ navigation }) => {
                     ]}
                     onPress={() => setEditableProfile({...editableProfile, gender: 'Other'})}
                   >
-                    <Text style={styles.genderOptionText}>Other</Text>
+                    <Text style={[
+                      styles.genderOptionText,
+                      editableProfile.gender === 'Other' && styles.selectedGenderOptionText
+                    ]}>Other</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -279,6 +324,7 @@ const ProfileScreen = ({ navigation }) => {
               )}
             </View>
             
+            {/* Height */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Height</Text>
               {isEditing ? (
@@ -296,6 +342,7 @@ const ProfileScreen = ({ navigation }) => {
               )}
             </View>
             
+            {/* Weight */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Weight</Text>
               {isEditing ? (
@@ -313,6 +360,7 @@ const ProfileScreen = ({ navigation }) => {
               )}
             </View>
             
+            {/* Body Fat */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Body Fat</Text>
               {isEditing ? (
@@ -330,6 +378,7 @@ const ProfileScreen = ({ navigation }) => {
               )}
             </View>
             
+            {/* Activity Level */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Activity Level</Text>
               {isEditing ? (
@@ -359,11 +408,13 @@ const ProfileScreen = ({ navigation }) => {
               )}
             </View>
             
+            {/* Daily Calories */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Est. Daily Calories</Text>
               <Text style={styles.detailValue}>{calculateCalories()} kcal</Text>
             </View>
             
+            {/* Settings - Units */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Use Imperial Units</Text>
               {isEditing ? (
@@ -372,14 +423,15 @@ const ProfileScreen = ({ navigation }) => {
                   onValueChange={(value) => 
                     setEditableProfile({...editableProfile, units: value ? 'imperial' : 'metric'})
                   }
-                  trackColor={{ false: "#E0E0E0", true: "#4A6CF7" }}
-                  thumbColor="#FFFFFF"
+                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                  thumbColor={theme.colors.background}
                 />
               ) : (
                 <Text style={styles.detailValue}>{profile.units === 'imperial' ? 'Yes' : 'No'}</Text>
               )}
             </View>
             
+            {/* Settings - Notifications */}
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Notifications</Text>
               {isEditing ? (
@@ -388,16 +440,28 @@ const ProfileScreen = ({ navigation }) => {
                   onValueChange={(value) => 
                     setEditableProfile({...editableProfile, notifications: value})
                   }
-                  trackColor={{ false: "#E0E0E0", true: "#4A6CF7" }}
-                  thumbColor="#FFFFFF"
+                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                  thumbColor={theme.colors.background}
                 />
               ) : (
                 <Text style={styles.detailValue}>{profile.notifications ? 'Enabled' : 'Disabled'}</Text>
               )}
             </View>
+            
+            {/* Dark Mode Toggle */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Dark Mode</Text>
+              <Switch
+                value={isDarkMode}
+                onValueChange={toggleTheme}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                thumbColor={theme.colors.background}
+              />
+            </View>
           </View>
         </View>
         
+        {/* Save Button */}
         {isEditing && (
           <TouchableOpacity 
             style={styles.saveButton}
@@ -412,36 +476,40 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         )}
         
+        {/* Logout button */}
         <TouchableOpacity style={styles.logoutButton}>
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
         
+        {/* App version */}
+        <Text style={styles.versionText}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+// Dynamic styles that adjust based on the current theme
+const createStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFC',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFC',
+    backgroundColor: theme.colors.background,
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   header: {
     alignItems: 'center',
     paddingVertical: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#EFEFEF',
+    borderBottomColor: theme.colors.border,
   },
   profileImageContainer: {
     position: 'relative',
@@ -452,19 +520,19 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     borderWidth: 3,
-    borderColor: '#4A6CF7',
+    borderColor: theme.colors.primary,
   },
   editImageButton: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#4A6CF7',
+    backgroundColor: theme.colors.primary,
     borderRadius: 12,
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
   editImageText: {
-    color: '#FFFFFF',
+    color: theme.colors.buttonText,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -474,15 +542,15 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#333',
+    color: theme.colors.text,
   },
   nameInput: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#333',
+    color: theme.colors.text,
     textAlign: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#4A6CF7',
+    borderBottomColor: theme.colors.primary,
     paddingBottom: 4,
     minWidth: 200,
   },
@@ -490,10 +558,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#F0F4FF',
+    backgroundColor: theme.colors.cardSecondary,
   },
   editButtonText: {
-    color: '#4A6CF7',
+    color: theme.colors.primary,
     fontWeight: '600',
   },
   metricsContainer: {
@@ -501,12 +569,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 24,
     marginHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     marginTop: 16,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 2,
   },
@@ -517,17 +585,17 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333',
+    color: theme.colors.text,
     marginBottom: 4,
   },
   metricLabel: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   metricDivider: {
     width: 1,
     height: '80%',
-    backgroundColor: '#EFEFEF',
+    backgroundColor: theme.colors.border,
   },
   sectionContainer: {
     marginTop: 24,
@@ -536,18 +604,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#333',
+    color: theme.colors.text,
     marginBottom: 16,
   },
   goalContainer: {
-    backgroundColor: '#F0F4FF',
+    backgroundColor: theme.colors.cardSecondary,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 8,
   },
   goalText: {
-    color: '#4A6CF7',
+    color: theme.colors.primary,
     fontWeight: '600',
     fontSize: 16,
     textAlign: 'center',
@@ -559,7 +627,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   goalOption: {
-    backgroundColor: '#F0F4FF',
+    backgroundColor: theme.colors.cardSecondary,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -568,22 +636,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedGoalOption: {
-    backgroundColor: '#4A6CF7',
+    backgroundColor: theme.colors.primary,
   },
   goalOptionText: {
-    color: '#4A6CF7',
+    color: theme.colors.primary,
     fontWeight: '600',
   },
   selectedGoalOptionText: {
-    color: '#FFFFFF',
+    color: theme.colors.buttonText,
   },
   detailsContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#000',
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 2,
   },
@@ -593,23 +661,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
+    borderBottomColor: theme.colors.border,
   },
   detailLabel: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   detailValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: theme.colors.text,
   },
   detailInput: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: theme.colors.text,
     borderBottomWidth: 1,
-    borderBottomColor: '#4A6CF7',
+    borderBottomColor: theme.colors.primary,
     paddingVertical: 4,
     minWidth: 60,
     textAlign: 'right',
@@ -621,7 +689,7 @@ const styles = StyleSheet.create({
   detailInputUnit: {
     marginLeft: 4,
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.textSecondary,
   },
   inlineOptions: {
     flexDirection: 'row',
@@ -630,18 +698,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#F0F4FF',
+    backgroundColor: theme.colors.cardSecondary,
     marginLeft: 8,
   },
   selectedGenderOption: {
-    backgroundColor: '#4A6CF7',
+    backgroundColor: theme.colors.primary,
   },
   genderOptionText: {
     fontSize: 14,
-    color: '#4A6CF7',
+    color: theme.colors.primary,
   },
   selectedGenderOptionText: {
-    color: '#FFFFFF',
+    color: theme.colors.buttonText,
   },
   selectorContainer: {
     maxWidth: '70%',
@@ -650,35 +718,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#F0F4FF',
+    backgroundColor: theme.colors.cardSecondary,
     marginRight: 8,
   },
   selectedActivityOption: {
-    backgroundColor: '#4A6CF7',
+    backgroundColor: theme.colors.primary,
   },
   activityOptionText: {
     fontSize: 14,
-    color: '#4A6CF7',
+    color: theme.colors.primary,
   },
   selectedActivityOptionText: {
-    color: '#FFFFFF',
+    color: theme.colors.buttonText,
   },
   saveButton: {
-    backgroundColor: '#4A6CF7',
+    backgroundColor: theme.colors.primary,
     marginHorizontal: 16,
     marginTop: 24,
     marginBottom: 12,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#4A6CF7',
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: theme.colors.buttonText,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -690,16 +758,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FF6B6B',
+    borderColor: theme.colors.error,
   },
   logoutButtonText: {
-    color: '#FF6B6B',
+    color: theme.colors.error,
     fontSize: 16,
     fontWeight: '600',
   },
   versionText: {
     textAlign: 'center',
-    color: '#999',
+    color: theme.colors.textTertiary,
     fontSize: 12,
     marginBottom: 24,
   },

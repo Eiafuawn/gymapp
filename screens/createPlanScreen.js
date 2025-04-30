@@ -4,10 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme } from '../theme';
 import { useColorScheme } from 'react-native';
 import { fetchWorkouts, handleSavePlan } from '../api';
+import { useAuth } from '../auth';
 
 const CreatePlanScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { user } = useAuth();
 
   const [planName, setPlanName] = useState('');
   const [selectedWorkouts, setSelectedWorkouts] = useState({
@@ -27,7 +29,7 @@ const CreatePlanScreen = ({ navigation, route }) => {
   useEffect(() => {
     const getWorkouts = async () => {
       try {
-        const workouts = await fetchWorkouts();
+        const workouts = await fetchWorkouts(user);
         setWorkouts(workouts);
       } catch (error) {
         console.error('Error fetching workouts:', error);

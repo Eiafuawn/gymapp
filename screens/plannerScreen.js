@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 import { fetchPlans, activatePlan, getActivePlanId } from '../api';
+import { useAuth } from '../auth';
 
 const PlannerScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
@@ -22,6 +23,7 @@ const PlannerScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isPlanActive, setIsPlanActive] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (route.params?.selectedPlan) {
@@ -32,12 +34,12 @@ const PlannerScreen = ({ navigation, route }) => {
   useEffect(() => {
     const loadDefaultPlan = async () => {
       try {
-        const plans = await fetchPlans();
+        const plans = await fetchPlans(user);
         if (plans.length > 0) {
           const defaultPlan = plans[0];
           setPlan(defaultPlan);
-          const activePlan = await getActivePlanId();
-          if (String(activePlan) === String(plan.id)) {
+          const activePlan = await getActivePlanId(user);
+          if (String(activePlan) === String(defaultPlan.id)) {
             setIsPlanActive(true);
           } else {
             setIsPlanActive(false);
@@ -58,20 +60,21 @@ const PlannerScreen = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
+    if (!plan) return;
     const activePlan = async () => {
       try {
-        const activePlan = await getActivePlanId();
+        const activePlan = await getActivePlanId(user);
         if (String(activePlan) === String(plan.id)) {
           setIsPlanActive(true);
         } else {
           setIsPlanActive(false);
-          }
+        }
       } catch (error) {
         console.error('Error fetching active plan:', error);
       }
     };
-      activePlan();
-    }, [plan]);
+    activePlan();
+  }, [plan]);
 
 
 
@@ -90,21 +93,21 @@ const PlannerScreen = ({ navigation, route }) => {
     });
   };
 
-const togglePlanActive = async () => {
-  if (!plan?.id) return;
+  const togglePlanActive = async () => {
+    if (!plan?.id) return;
 
-  try {
-    setIsUpdating(true);
+    try {
+      setIsUpdating(true);
 
-    await activatePlan(plan.id);
-    setIsPlanActive((prev) => !prev);
+      await activatePlan(user, plan.id);
+      setIsPlanActive((prev) => !prev);
 
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setIsUpdating(false);
-  }
-};
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>

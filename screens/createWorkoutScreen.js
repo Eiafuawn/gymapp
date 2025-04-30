@@ -16,6 +16,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { fetchBodyParts, fetchExo, fetchExoPerBodyPart, fetchAutocompleteExercises, fetchExoById } from '../api';
 import Pagination from '../components/paginationComponent';
 import { handleSaveWorkout } from '../api';
+import { useAuth } from '../auth';
 
 const CreateWorkoutScreen = ({ route, navigation }) => {
   const { selectedDay, selectedWeek } = route.params || {};
@@ -31,6 +32,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [workoutName, setWorkoutName] = useState('');
   const exerciseListRef = useRef(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (selectedDay) {
@@ -109,7 +111,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
 
 
   const saveWorkout = () => {
-    handleSaveWorkout({
+    handleSaveWorkout(user, {
       name: workoutName,
       exercises: selectedExercises,
       day: selectedDay,

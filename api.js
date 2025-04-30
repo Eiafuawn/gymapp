@@ -1,18 +1,15 @@
 import { app } from './firebaseConfig';
 import { getDatabase, ref, push, onValue, update, remove } from "firebase/database";
-import { getAuth } from "firebase/auth";
 
 const database = getDatabase(app);
-const auth = getAuth(app);
-const user = auth.currentUser ? auth.currentUser.uid : null;
 
 
-export const handleSaveWorkout = (workout) => {
+export const handleSaveWorkout = (user, workout) => {
   if (!user) {
     console.error('No user is signed in. Cannot save workout.');
     return;
   }
-  push(ref(database, `user/${user}/workouts/`), workout)
+  push(ref(database, `user/${user.uid}/workouts/`), workout)
     .then(() => {
       console.log('Workout saved successfully');
     })
@@ -21,8 +18,8 @@ export const handleSaveWorkout = (workout) => {
     });
 }
 
-export const handleDeleteWorkout = (workoutId) => {
-  const workoutRef = ref(database, `user/${user}/workouts/${workoutId}`);
+export const handleDeleteWorkout = (user, workoutId) => {
+  const workoutRef = ref(database, `user/${user.uid}/workouts/${workoutId}`);
   remove(workoutRef)
     .then(() => {
       console.log('Workout deleted successfully');
@@ -32,8 +29,8 @@ export const handleDeleteWorkout = (workoutId) => {
     });
 }
 
-export const handleSavePlan = (plan) => {
-  push(ref(database, `user/${user}/workoutPlans/`), plan)
+export const handleSavePlan = (user, plan) => {
+  push(ref(database, `user/${user.uid}/workoutPlans/`), plan)
     .then(() => {
       console.log('Plan saved successfully');
     })
@@ -41,8 +38,8 @@ export const handleSavePlan = (plan) => {
       console.error('Error saving plan:', error);
     });
 }
-export const handleDeletePlan = (planId) => {
-  const planRef = ref(database, `user/${user}/workoutPlans/${planId}`);
+export const handleDeletePlan = (user, planId) => {
+  const planRef = ref(database, `user/${user.uid}/workoutPlans/${planId}`);
   remove(planRef)
     .then(() => {
       console.log('Plan deleted successfully');
@@ -52,10 +49,10 @@ export const handleDeletePlan = (planId) => {
     });
 }
 
-export const activatePlan = async (selectedPlanId) => {
+export const activatePlan = async (user, selectedPlanId) => {
   try {
     const updates = {
-      [`user/${user}/activePlanId`]: selectedPlanId,
+      [`user/${user.uid}/activePlanId`]: selectedPlanId,
     };
 
     await update(ref(database), updates);
@@ -66,10 +63,10 @@ export const activatePlan = async (selectedPlanId) => {
   }
 };
 
-export const getActivePlanId = async () => {
+export const getActivePlanId = async (user) => {
   return new Promise((resolve, reject) => {
     try {
-      const itemsRef = ref(database, `user/${user}/activePlanId/`);
+      const itemsRef = ref(database, `user/${user.uid}/activePlanId/`);
       onValue(
         itemsRef,
         (snapshot) => {
@@ -92,18 +89,15 @@ export const getActivePlanId = async () => {
   });
 }
 
-export const getActivePlan = async () => {
-  const activePlanId = await getActivePlanId();
-  console.log('Active plan ID:', activePlanId);
-  console.log('User ID:', user);
+export const getActivePlan = async (user) => {
+  const activePlanId = await getActivePlanId(user);
   return new Promise((resolve, reject) => {
     try {
-      const itemsRef = ref(database, `user/${user}/workoutPlans/${activePlanId}`);
+      const itemsRef = ref(database, `user/${user.uid}/workoutPlans/${activePlanId}`);
       onValue(
         itemsRef,
         (snapshot) => {
           const data = snapshot.val();
-          console.log('Active plan data:', data);
           if (data) {
             const workoutPlan = {
               id: activePlanId,
@@ -126,10 +120,10 @@ export const getActivePlan = async () => {
   });
 }
 
-export const fetchPlans = async () => {
+export const fetchPlans = async (user) => {
   return new Promise((resolve, reject) => {
     try {
-      const itemsRef = ref(database, `user/${user}/workoutPlans/`);
+      const itemsRef = ref(database, `user/${user.uid}/workoutPlans/`);
       onValue(
         itemsRef,
         (snapshot) => {
@@ -159,10 +153,10 @@ export const fetchPlans = async () => {
   });
 };
 
-export const fetchWorkouts = async () => {
+export const fetchWorkouts = async (user) => {
   try {
     return new Promise((resolve, reject) => {
-      const itemsRef = ref(database, `user/${user}/workouts/`);
+      const itemsRef = ref(database, `user/${user.uid}/workouts/`);
       onValue(
         itemsRef,
         (snapshot) => {

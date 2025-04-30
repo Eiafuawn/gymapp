@@ -75,7 +75,7 @@ export default function App() {
       <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <Tab.Navigator
-          initialRouteName={user ? 'Home' : 'SignIn'}
+          initialRouteName={user ? 'Home' : 'Log In'}
           screenOptions={({ route }) => ({
             tabBarIcon: ({ focused, color, size }) => {
               let iconName;

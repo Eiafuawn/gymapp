@@ -12,40 +12,38 @@ import { useColorScheme } from 'react-native';
 import { fetchTodayWorkout, getMockTodayWorkout, getActivePlan } from '../api';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
+import { useAuth } from '../auth';
 
 const HomeScreen = () => {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
     const loadWorkout = async () => {
       setIsLoading(true);
       try {
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const currentDayName = dayNames[new Date().getDay()];
-        const activePlan = await getActivePlan();
+        const activePlan = await getActivePlan(user);
         const workoutPlan = activePlan.days.find(day => day.day === currentDayName);
         setTodayWorkout(workoutPlan);
       } catch (error) {
         console.error('Error loading workout:', error);
         setTodayWorkout(getMockTodayWorkout());
       } finally {
-        if (todayWorkout !== null) {
           setIsLoading(false);
-        }
       }
     };
 
     loadWorkout();
-  }, []);
-
-  useEffect(() => {
-    if (todayWorkout !== null) {
-      setIsLoading(false);
-    }
-  }, [todayWorkout]);
+  }, [user]);
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>

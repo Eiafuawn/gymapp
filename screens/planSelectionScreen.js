@@ -14,19 +14,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 import { fetchPlans, handleDeletePlan } from '../api';
+import { useAuth } from '../auth';
 
 const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
   const [isLoading, setIsLoading] = useState(true);
   const [plans, setPlans] = useState([]);
+  const { user } = useAuth();
 
   const currentPlan = route.params?.onGoBack;
 
   useEffect(() => {
     const getPlans = async () => {
       try {
-        const plans = await fetchPlans();
+        const plans = await fetchPlans(user);
         setPlans(plans);
       } catch (error) {
         console.error('Error fetching plans:', error);
@@ -61,7 +63,7 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
 
   const deletePlan = async (planId) => {
     try {
-      await handleDeletePlan(planId);
+      await handleDeletePlan(user, planId);
       setPlans((prevPlans) => prevPlans.filter((plan) => plan.id !== planId));
     } catch (error) {
       console.error('Error deleting plan:', error);
