@@ -481,14 +481,11 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
         
-        {/* App version */}
-        <Text style={styles.versionText}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-// Dynamic styles that adjust based on the current theme
 const createStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
