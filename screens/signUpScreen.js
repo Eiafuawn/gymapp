@@ -12,9 +12,6 @@ import {
   ActivityIndicator 
 } from 'react-native';
 import { signUp } from '../auth';
-import { useColorScheme } from 'react-native';
-import { lightTheme, darkTheme } from '../theme';
-import { globalStyles } from '../styles';
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -30,7 +27,7 @@ const SignUpScreen = ({ navigation }) => {
     setLoading(true);
     try {
       await signUp(email, password);
-      navigation.navigate('SignIn');
+      navigation.navigate('Log In');
     } catch (error) {
       alert(error.message);
     } finally {
