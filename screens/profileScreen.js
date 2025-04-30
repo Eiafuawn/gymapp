@@ -17,7 +17,7 @@ import { getUserProfile, updateUserProfile } from '../api';
 import { useTheme } from '../theme';
 import { useAuth } from '../auth';
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, route }) => {
   const { theme, isDarkMode, toggleTheme } = useTheme();
   const { user } = useAuth();
   const placeholderProfile = {
@@ -43,6 +43,11 @@ const ProfileScreen = ({ navigation }) => {
   
   const fitnessGoals = ['Lose weight', 'Build muscle', 'Improve endurance', 'General fitness'];
   const activityLevels = ['Sedentary', 'Light', 'Moderate', 'Active', 'Very active'];
+
+  if (route.params?.mode === 'edit') {
+    setIsEditing(true);
+    toggleEditMode();
+  }
 
   useEffect(() => {
     const loadUserProfile = async () => {
