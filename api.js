@@ -1,10 +1,18 @@
 import { app } from './firebaseConfig';
 import { getDatabase, ref, push, onValue, update, remove } from "firebase/database";
+import { getAuth } from "firebase/auth";
 
 const database = getDatabase(app);
+const auth = getAuth(app);
+const user = auth.currentUser ? auth.currentUser.uid : null;
+
 
 export const handleSaveWorkout = (workout) => {
-  push(ref(database, 'workouts/'), workout)
+  if (!user) {
+    console.error('No user is signed in. Cannot save workout.');
+    return;
+  }
+  push(ref(database, `user/${user}/workouts/`), workout)
     .then(() => {
       console.log('Workout saved successfully');
     })
@@ -14,7 +22,7 @@ export const handleSaveWorkout = (workout) => {
 }
 
 export const handleDeleteWorkout = (workoutId) => {
-  const workoutRef = ref(database, `workouts/${workoutId}`);
+  const workoutRef = ref(database, `user/${user}/workouts/${workoutId}`);
   remove(workoutRef)
     .then(() => {
       console.log('Workout deleted successfully');
@@ -25,7 +33,7 @@ export const handleDeleteWorkout = (workoutId) => {
 }
 
 export const handleSavePlan = (plan) => {
-  push(ref(database, 'workoutPlans/'), plan)
+  push(ref(database, `user/${user}/workoutPlans/`), plan)
     .then(() => {
       console.log('Plan saved successfully');
     })
@@ -34,7 +42,7 @@ export const handleSavePlan = (plan) => {
     });
 }
 export const handleDeletePlan = (planId) => {
-  const planRef = ref(database, `workoutPlans/${planId}`);
+  const planRef = ref(database, `user/${user}/workoutPlans/${planId}`);
   remove(planRef)
     .then(() => {
       console.log('Plan deleted successfully');
@@ -47,7 +55,7 @@ export const handleDeletePlan = (planId) => {
 export const activatePlan = async (selectedPlanId) => {
   try {
     const updates = {
-      [`activePlanId`]: selectedPlanId,
+      [`user/${user}/activePlanId`]: selectedPlanId,
     };
 
     await update(ref(database), updates);
@@ -61,7 +69,7 @@ export const activatePlan = async (selectedPlanId) => {
 export const getActivePlanId = async () => {
   return new Promise((resolve, reject) => {
     try {
-      const itemsRef = ref(database, 'activePlanId/');
+      const itemsRef = ref(database, `user/${user}/activePlanId/`);
       onValue(
         itemsRef,
         (snapshot) => {
@@ -86,13 +94,16 @@ export const getActivePlanId = async () => {
 
 export const getActivePlan = async () => {
   const activePlanId = await getActivePlanId();
+  console.log('Active plan ID:', activePlanId);
+  console.log('User ID:', user);
   return new Promise((resolve, reject) => {
     try {
-      const itemsRef = ref(database, `workoutPlans/${activePlanId}`);
+      const itemsRef = ref(database, `user/${user}/workoutPlans/${activePlanId}`);
       onValue(
         itemsRef,
         (snapshot) => {
           const data = snapshot.val();
+          console.log('Active plan data:', data);
           if (data) {
             const workoutPlan = {
               id: activePlanId,
@@ -118,7 +129,7 @@ export const getActivePlan = async () => {
 export const fetchPlans = async () => {
   return new Promise((resolve, reject) => {
     try {
-      const itemsRef = ref(database, 'workoutPlans/');
+      const itemsRef = ref(database, `user/${user}/workoutPlans/`);
       onValue(
         itemsRef,
         (snapshot) => {
@@ -151,7 +162,7 @@ export const fetchPlans = async () => {
 export const fetchWorkouts = async () => {
   try {
     return new Promise((resolve, reject) => {
-      const itemsRef = ref(database, 'workouts/');
+      const itemsRef = ref(database, `user/${user}/workouts/`);
       onValue(
         itemsRef,
         (snapshot) => {
@@ -262,11 +273,9 @@ export const fetchExoPerBodyPart = async (bodypartName) => {
 }
 
 export const fetchExoById = async (id) => {
-  console.log('Fetching exercise by ID:', id);
   try {
     const response = await fetch(`https://exercisedb-api.vercel.app/api/v1/exercises/${id}`);
     const data = await response.json();
-    console.log('Exercise data:', data);
     return data;
   } catch (error) {
     console.error('Error fetching exercise by ID:', error);
