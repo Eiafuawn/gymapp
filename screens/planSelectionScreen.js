@@ -12,13 +12,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../styles';
-import { lightTheme, darkTheme } from '../theme';
+import { useTheme } from '../theme';
 import { fetchPlans, handleDeletePlan } from '../api';
 import { useAuth } from '../auth';
 
 const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { theme } = useTheme(colorScheme);
   const [isLoading, setIsLoading] = useState(true);
   const [plans, setPlans] = useState([]);
   const { user } = useAuth();
@@ -47,6 +47,14 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   const handleCreateNewPlan = () => {
     navigation.navigate('CreatePlan');
   };
+  
+  const countNbrOfWorkouts = (plan) => {
+    return plan.days.filter(day => day.restDay).length;
+  }
+
+  const countNbrOfRestDays = (plan) => {
+    return plan.days.filter(day => !day.restDay).length;
+  }
 
   useEffect(() => {
     navigation.setOptions({
@@ -93,9 +101,10 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
               activeOpacity={0.7}
               onPress={() => handleSelectPlan(item)}
             >
-              <Image
-                source={{ uri: item.image }}
-                style={styles.planImage}
+              <Ionicons
+                name="barbell"
+                size={24}
+                color={theme.colors.text}
               />
               <View style={styles.planInfo}>
                 <Text style={[styles.planTitle, { color: theme.colors.text }]}>{item.name}</Text>
@@ -103,13 +112,13 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
                   <View style={styles.planMetaItem}>
                     <Ionicons name="fitness-outline" size={14} color={theme.colors.textSecondary} />
                     <Text style={[styles.planMetaText, { color: theme.colors.textSecondary }]}>
-                      {item.category}
+                      {countNbrOfWorkouts(item)} workouts
                     </Text>
                   </View>
                   <View style={styles.planMetaItem}>
-                    <Ionicons name="calendar-outline" size={14} color={theme.colors.textSecondary} />
+                    <Ionicons name="bed-outline" size={14} color={theme.colors.textSecondary} />
                     <Text style={[styles.planMetaText, { color: theme.colors.textSecondary }]}>
-                      {item.duration}
+                      {countNbrOfRestDays(item)} rest days
                     </Text>
                   </View>
                 </View>
