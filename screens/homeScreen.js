@@ -11,12 +11,11 @@ import { useColorScheme } from 'react-native';
 
 import { fetchTodayWorkout, getMockTodayWorkout, getActivePlan } from '../api';
 import { globalStyles } from '../styles';
-import { lightTheme, darkTheme } from '../theme';
 import { useAuth } from '../auth';
+import { useTheme } from '../theme';
 
 const HomeScreen = () => {
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { theme } = useTheme();
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();

@@ -15,10 +15,11 @@ import { globalStyles } from '../styles';
 import { lightTheme, darkTheme } from '../theme';
 import { fetchPlans, activatePlan, getActivePlanId } from '../api';
 import { useAuth } from '../auth';
+import { useTheme } from '../theme';
 
 const PlannerScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { theme } = useTheme();
   const [plan, setPlan] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -204,7 +205,8 @@ const PlannerScreen = ({ navigation, route }) => {
                     <Text style={[globalStyles.itemTitle, { color: theme.colors.text }]}>{day.day}</Text>
                     <Text style={[
                       globalStyles.itemSubtitle,
-                      { color: !day.restDay ? theme.colors.text : theme.colors.border }
+                      { color: !day.restDay ? theme.colors.text : theme.colors.textSecondary },
+                      { fontWeight: !day.restDay ? '500' : 'normal' }
                     ]}>
                       {!day.restDay ? day.workout.name : 'Rest Day'}
                     </Text>

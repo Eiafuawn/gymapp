@@ -69,7 +69,7 @@ export const globalStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cardSubtitle: {
-    fontSize: 14,
+    fontSize: 18,
     opacity: 0.7,
     marginTop: 2,
   },
