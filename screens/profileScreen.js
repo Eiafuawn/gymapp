@@ -1,5 +1,3 @@
-// Modified ProfileScreen with theme toggle functionality
-
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -15,15 +13,14 @@ import {
   Modal,
   Platform
 } from 'react-native';
-// import { getUserProfile, updateUserProfile } from '../api/userProfile'; // Assuming these functions exist
-import { useTheme } from '../theme'; // Import the theme hook
+import { getUserProfile, updateUserProfile } from '../api';
+import { useTheme } from '../theme';
+import { useAuth } from '../auth';
 
 const ProfileScreen = ({ navigation }) => {
-  // Use the theme context
   const { theme, isDarkMode, toggleTheme } = useTheme();
-  
-  // Initial state with mock data
-  const [profile, setProfile] = useState({
+  const { user } = useAuth();
+  const placeholderProfile = {
     name: 'Alex Johnson',
     age: 28,
     gender: 'Male',
@@ -35,30 +32,31 @@ const ProfileScreen = ({ navigation }) => {
     profileImage: 'https://reactnative.dev/img/tiny_logo.png', // placeholder
     notifications: true,
     units: 'metric' // metric or imperial
-  });
+  }
+
+  const [profile, setProfile] = useState(null);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editableProfile, setEditableProfile] = useState({...profile});
   const [isSaving, setIsSaving] = useState(false);
   
-  // Goals available in the app
   const fitnessGoals = ['Lose weight', 'Build muscle', 'Improve endurance', 'General fitness'];
   const activityLevels = ['Sedentary', 'Light', 'Moderate', 'Active', 'Very active'];
 
-  // Mock function to fetch user profile
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        setIsLoading(true);
-        // In a real app, fetch from API
-        // const data = await getUserProfile();
-        // setProfile(data);
-        
-        // Simulate API call
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 1000);
+        const userProfile = await getUserProfile(user);
+        console.log('User Profile:', user);
+        if (userProfile) {
+          setProfile(userProfile);
+          setEditableProfile(userProfile);
+        } else {
+          setProfile(placeholderProfile);
+          setEditableProfile(placeholderProfile);
+        }
+        setIsLoading(false);
       } catch (error) {
         console.error('Failed to load profile:', error);
         setIsLoading(false);
@@ -71,15 +69,10 @@ const ProfileScreen = ({ navigation }) => {
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
-      // In a real app, send to API
-      // await updateUserProfile(editableProfile);
-      
-      // Simulate API call
-      setTimeout(() => {
-        setProfile(editableProfile);
-        setIsEditing(false);
-        setIsSaving(false);
-      }, 1000);
+      await updateUserProfile(user, editableProfile); 
+      setProfile(editableProfile);
+      setIsEditing(false);
+      setIsSaving(false);
     } catch (error) {
       console.error('Failed to save profile:', error);
       setIsSaving(false);
@@ -89,10 +82,8 @@ const ProfileScreen = ({ navigation }) => {
 
   const toggleEditMode = () => {
     if (isEditing) {
-      // Discard changes
       setEditableProfile({...profile});
     } else {
-      // Enter edit mode
       setEditableProfile({...profile});
     }
     setIsEditing(!isEditing);
@@ -102,7 +93,6 @@ const ProfileScreen = ({ navigation }) => {
     if (profile.units === 'metric') {
       return `${profile.height} cm`;
     } else {
-      // Convert cm to feet and inches
       const totalInches = profile.height / 2.54;
       const feet = Math.floor(totalInches / 12);
       const inches = Math.round(totalInches % 12);
@@ -120,14 +110,12 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  // Calculate BMI as a fitness metric
   const calculateBMI = () => {
     const heightInMeters = profile.height / 100;
     const bmi = profile.weight / (heightInMeters * heightInMeters);
     return bmi.toFixed(1);
   };
 
-  // Calculate daily calorie needs (basic BMR using Mifflin-St Jeor)
   const calculateCalories = () => {
     let bmr;
     if (profile.gender === 'Male') {
@@ -136,7 +124,6 @@ const ProfileScreen = ({ navigation }) => {
       bmr = 10 * profile.weight + 6.25 * profile.height - 5 * profile.age - 161;
     }
     
-    // Activity multipliers
     const activityMultipliers = {
       'Sedentary': 1.2,
       'Light': 1.375,
@@ -149,10 +136,8 @@ const ProfileScreen = ({ navigation }) => {
     return Math.round(bmr * multiplier);
   };
 
-  // Create styles with the current theme
   const styles = createStyles(theme);
 
-  // Loading state
   if (isLoading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>

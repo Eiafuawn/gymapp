@@ -3,6 +3,54 @@ import { getDatabase, ref, push, onValue, update, remove } from "firebase/databa
 
 const database = getDatabase(app);
 
+export const getUserProfile = (user) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const itemsRef = ref(database, `user/${user.uid}/profile/`);
+      onValue(
+        itemsRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            resolve(data);
+          } else {
+            resolve(null);
+          }
+        },
+        (error) => {
+          console.error('Error fetching user profile:', error);
+          reject(error);
+        });
+    } catch (error) {
+      console.error('Error setting up getUserProfile:', error);
+      reject(error);
+    };
+  });
+}
+
+export const updateUserProfile = (user, profile) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const updates = {
+        [`user/${user.uid}/profile/`]: profile,
+      };
+
+      update(ref(database), updates)
+        .then(() => {
+          console.log('Successfully updated user profile!');
+          resolve();
+        })
+        .catch((error) => {
+          console.error('Failed to update user profile:', error);
+          reject(error);
+        });
+    } catch (error) {
+      console.error('Error setting up updateUserProfile:', error);
+      reject(error);
+    }
+  });
+}
+
 
 export const handleSaveWorkout = (user, workout) => {
   if (!user) {
