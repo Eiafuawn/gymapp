@@ -197,7 +197,9 @@ const PlannerScreen = ({ navigation, route }) => {
                   ]}
                   onPress={() => {
                     navigation.navigate('CreateWorkout', {
-                      selectedDay: day.day,
+                        planId: plan.id,
+                        selectedWorkout: day.workout,
+                        selectedDay: day.day,
                     });
                   }}
                 >

@@ -11,14 +11,21 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { globalStyles } from '../styles';
-import { fetchBodyParts, fetchExo, fetchExoPerBodyPart, fetchAutocompleteExercises, fetchExoById } from '../api';
+import {
+  fetchBodyParts,
+  fetchExo,
+  fetchExoPerBodyPart,
+  fetchAutocompleteExercises,
+  fetchExoById,
+  handleUpdateWorkout
+} from '../api';
 import Pagination from '../components/paginationComponent';
 import { handleSaveWorkout } from '../api';
 import { useAuth } from '../auth';
 import { useTheme } from '../theme';
 
 const CreateWorkoutScreen = ({ route, navigation }) => {
-  const { selectedDay, selectedWeek } = route.params || {};
+  const { planId, selectedWorkout, selectedDay } = route.params || {};
   const { theme } = useTheme();
   const [activeCategory, setActiveCategory] = useState('All');
   const [totalPages, setTotalPages] = useState(0);
@@ -29,16 +36,19 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   const [selectedExercises, setSelectedExercises] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [workoutName, setWorkoutName] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
   const exerciseListRef = useRef(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    if (selectedDay) {
-      setWorkoutName(`${selectedDay} Workout - Week ${selectedWeek}`);
+    if (planId && selectedWorkout) {
+      setWorkoutName(selectedWorkout.name);
+      setSelectedExercises(selectedWorkout.exercises);
+      setIsUpdating(true);
     } else {
       setWorkoutName('New Workout');
     }
-  }, [selectedDay, selectedWeek]);
+  }, [planId, selectedWorkout]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -109,12 +119,20 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
 
 
   const saveWorkout = () => {
-    handleSaveWorkout(user, {
-      name: workoutName,
-      exercises: selectedExercises,
-      day: selectedDay,
-    });
-
+    if (isUpdating) {
+      console.log(selectedWorkout);
+      handleUpdateWorkout(user, selectedWorkout.id, {
+        name: workoutName,
+        exercises: selectedExercises,
+        day: selectedDay,
+      });
+    } else {
+      handleSaveWorkout(user, {
+        name: workoutName,
+        exercises: selectedExercises,
+        day: selectedDay,
+      });
+    }
 
     navigation.goBack();
   };
@@ -164,14 +182,6 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
             />
           </View>
 
-          {selectedDay && (
-            <View style={styles.selectedDayContainer}>
-              <Ionicons name="calendar-outline" size={20} color={theme.colors.primary} />
-              <Text style={[styles.selectedDayText, { color: theme.colors.text }]}>
-                {selectedDay}, Week {selectedWeek}
-              </Text>
-            </View>
-          )}
 
           <View style={styles.selectedCountContainer}>
             <Text style={[styles.selectedCountText, { color: theme.colors.text }]}>
@@ -260,7 +270,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
                       <Text style={[globalStyles.itemSubtitle, { color: theme.colors.text }]}>
                         {exercise.bodyParts?.join(', ') || 'No body part'}
                       </Text>
-                      <Text style={[globalStyles.itemSubtitle, { color: theme.colors.textSecondary}]}>
+                      <Text style={[globalStyles.itemSubtitle, { color: theme.colors.textSecondary }]}>
                         {exercise.equipments?.join(', ') || 'No equipment'}
                       </Text>
                     </View>

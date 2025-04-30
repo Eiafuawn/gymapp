@@ -66,6 +66,29 @@ export const handleSaveWorkout = (user, workout) => {
     });
 }
 
+export const handleUpdateWorkout = (user, workoutId, updatedWorkout) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const updates = {
+        [`user/${user.uid}/workouts/${workoutId}`]: updatedWorkout,
+      };
+
+      update(ref(database), updates)
+        .then(() => {
+          console.log('Successfully updated workout!');
+          resolve();
+        })
+        .catch((error) => {
+          console.error('Failed to update workout:', error);
+          reject(error);
+        });
+    } catch (error) {
+      console.error('Error setting up handleUpdateWorkout:', error);
+      reject(error);
+    }
+  });
+}
+
 export const handleDeleteWorkout = (user, workoutId) => {
   const workoutRef = ref(database, `user/${user.uid}/workouts/${workoutId}`);
   remove(workoutRef)
