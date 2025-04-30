@@ -7,9 +7,8 @@ import {
   SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
 
-import { fetchTodayWorkout, getMockTodayWorkout, getActivePlan } from '../api';
+import { getMockTodayWorkout, getActivePlan, getUserProfile } from '../api';
 import { globalStyles } from '../styles';
 import { useAuth } from '../auth';
 import { useTheme } from '../theme';
@@ -17,7 +16,10 @@ import { useTheme } from '../theme';
 const HomeScreen = () => {
   const { theme } = useTheme();
   const [todayWorkout, setTodayWorkout] = useState(null);
+  const [weeksWorkouts, setWeeksWorkouts] = useState(0);
+  const [workoutsDone, setWorkoutsDone] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -25,22 +27,48 @@ const HomeScreen = () => {
       console.error('User not authenticated');
       return;
     }
+
+    const getUserProfileData = async () => {
+      try {
+        const profile = await getUserProfile(user);
+        if (profile) {
+          setUserProfile(profile);
+        } else {
+          console.error('No user profile found');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    }
+
     const loadWorkout = async () => {
       setIsLoading(true);
       try {
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const currentDayName = dayNames[new Date().getDay()];
+        const currentDayIndex = new Date().getDay();
         const activePlan = await getActivePlan(user);
         const workoutPlan = activePlan.days.find(day => day.day === currentDayName);
         setTodayWorkout(workoutPlan);
+
+        const nbrOfWorkouts = activePlan.days.filter(day => day.restDay === true).length;
+        setWeeksWorkouts(nbrOfWorkouts);
+
+        const workoutsBeforeToday = activePlan.days.filter(day => {
+          const dayIndex = dayNames.indexOf(day.day);
+          return dayIndex >= 0 && dayIndex < currentDayIndex;
+        });
+
+        setWorkoutsDone(workoutsBeforeToday.length);
       } catch (error) {
         console.error('Error loading workout:', error);
         setTodayWorkout(getMockTodayWorkout());
       } finally {
-          setIsLoading(false);
+        setIsLoading(false);
       }
     };
 
+    getUserProfileData();
     loadWorkout();
   }, [user]);
 
@@ -49,7 +77,7 @@ const HomeScreen = () => {
       <ScrollView contentContainerStyle={globalStyles.scrollContent}>
         <View style={globalStyles.headerContainer}>
           <Text style={[globalStyles.greeting, { color: theme.colors.text }]}>
-            Good morning, Alex
+            Hello, {userProfile ? userProfile.name : 'User'}!
           </Text>
           <Text style={[globalStyles.date, { color: theme.colors.text }]}>
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -58,12 +86,12 @@ const HomeScreen = () => {
 
         <View style={[globalStyles.statsContainer, { backgroundColor: theme.colors.cardBackground }]}>
           <View style={globalStyles.statItem}>
-            <Text style={[globalStyles.statValue, { color: theme.colors.text }]}>3</Text>
+            <Text style={[globalStyles.statValue, { color: theme.colors.text }]}>{weeksWorkouts}</Text>
             <Text style={[globalStyles.statLabel, { color: theme.colors.text }]}>Workouts this week</Text>
           </View>
           <View style={globalStyles.statDivider} />
           <View style={globalStyles.statItem}>
-            <Text style={[globalStyles.statValue, { color: theme.colors.text }]}>75%</Text>
+            <Text style={[globalStyles.statValue, { color: theme.colors.text }]}>{Math.round((workoutsDone / weeksWorkouts) * 100)}%</Text>
             <Text style={[globalStyles.statLabel, { color: theme.colors.text }]}>Weekly goal</Text>
           </View>
         </View>
