@@ -127,7 +127,7 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
                 style={styles.deleteButton}
                 onPress={() => deletePlan(item.id)}
               >
-                <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
+                <Ionicons name="trash-outline" size={20} color="red" />
               </TouchableOpacity>
 
               {currentPlan?.id === item.id && (
