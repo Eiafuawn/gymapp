@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useColorScheme } from 'react-native';
 import {
   View,
   Text,
@@ -12,16 +11,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { globalStyles } from '../styles';
-import { lightTheme, darkTheme } from '../theme';
 import { fetchBodyParts, fetchExo, fetchExoPerBodyPart, fetchAutocompleteExercises, fetchExoById } from '../api';
 import Pagination from '../components/paginationComponent';
 import { handleSaveWorkout } from '../api';
 import { useAuth } from '../auth';
+import { useTheme } from '../theme';
 
 const CreateWorkoutScreen = ({ route, navigation }) => {
   const { selectedDay, selectedWeek } = route.params || {};
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { theme } = useTheme();
   const [activeCategory, setActiveCategory] = useState('All');
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -262,7 +260,7 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
                       <Text style={[globalStyles.itemSubtitle, { color: theme.colors.text }]}>
                         {exercise.bodyParts?.join(', ') || 'No body part'}
                       </Text>
-                      <Text style={[globalStyles.itemSubtitle, { color: theme.colors.secondaryText }]}>
+                      <Text style={[globalStyles.itemSubtitle, { color: theme.colors.textSecondary}]}>
                         {exercise.equipments?.join(', ') || 'No equipment'}
                       </Text>
                     </View>
