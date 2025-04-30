@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -13,7 +14,7 @@ import { globalStyles } from '../styles';
 import { useAuth } from '../auth';
 import { useTheme } from '../theme';
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [weeksWorkouts, setWeeksWorkouts] = useState(0);
@@ -22,7 +23,7 @@ const HomeScreen = () => {
   const [userProfile, setUserProfile] = useState(null);
   const { user } = useAuth();
 
-  useEffect(() => {
+  useFocusEffect(React.useCallback(() => {
     if (!user) {
       console.error('User not authenticated');
       return;
@@ -34,7 +35,16 @@ const HomeScreen = () => {
         if (profile) {
           setUserProfile(profile);
         } else {
-          console.error('No user profile found');
+          Alert.alert(
+            'Profile Required',
+            'Please create a profile first.',
+            [{
+              text: 'OK', onPress: () => {
+                navigation.navigate('ProfileScreen', { mode: 'edit' });
+              }
+            }],
+            { cancelable: false }
+          );
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -70,7 +80,7 @@ const HomeScreen = () => {
 
     getUserProfileData();
     loadWorkout();
-  }, [user]);
+  }, [user]));
 
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
@@ -107,10 +117,15 @@ const HomeScreen = () => {
             </View>
           ) : (
             <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
-              <View style={styles.workoutHeader}>
-                <View>
-                  <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>{todayWorkout.workout.name}</Text>
-                </View>
+              <View style={[styles.workoutHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                <Text style={[globalStyles.cardTitle, {
+                  color: theme.colors.text,
+                  fontSize: 24,
+                  paddingVertical: 8,
+                  borderRadius: 8,
+                }]}>
+                  {todayWorkout.workout.name}
+                </Text>
                 <TouchableOpacity
                   style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.primary }]}
                   onPress={() => console.log('Start workout')}
@@ -119,6 +134,8 @@ const HomeScreen = () => {
                 </TouchableOpacity>
               </View>
 
+
+              <View style={globalStyles.listItemDivider} />
               <View style={styles.exerciseList}>
                 {todayWorkout.workout.exercises.map((exercise, index) => (
                   <View key={index} style={[
