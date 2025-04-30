@@ -43,7 +43,6 @@ const PlannerStackNavigator = () => {
   );
 };
 
-// Wrap the TabNavigator in a component to access theme context
 const MainNavigator = () => {
   const { theme, isDarkMode } = useTheme();
   const [user, setUser] = useState(null);
