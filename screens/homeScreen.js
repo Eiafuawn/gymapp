@@ -43,7 +43,6 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (todayWorkout !== null) {
-      console.log('Updated todayWorkout:', todayWorkout);
       setIsLoading(false);
     }
   }, [todayWorkout]);
