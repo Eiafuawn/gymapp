@@ -1,7 +1,93 @@
-// theme.js - Theme configuration
 import { DefaultTheme, DarkTheme } from '@react-navigation/native';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Theme configuration
+const THEME_MODES = {
+  LIGHT: 'light',
+  DARK: 'dark',
+  SYSTEM: 'system'
+};
+
+const THEME_STORAGE_KEY = '@app_theme_mode';
+
+const ThemeContext = createContext({
+  theme: lightTheme,
+  themeMode: THEME_MODES.SYSTEM,
+  isDarkMode: false,
+  setThemeMode: () => {},
+  toggleTheme: () => {},
+});
+
+export const ThemeProvider = ({ children }) => {
+  const systemColorScheme = useColorScheme();
+  
+  const [themeMode, setThemeMode] = useState(THEME_MODES.SYSTEM);
+  
+  const isDarkMode = 
+    themeMode === THEME_MODES.DARK || 
+    (themeMode === THEME_MODES.SYSTEM && systemColorScheme === 'dark');
+  
+  const theme = isDarkMode ? darkTheme : lightTheme;
+  
+  useEffect(() => {
+    const loadThemePreference = async () => {
+      try {
+        const savedThemeMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+        if (savedThemeMode !== null) {
+          setThemeMode(savedThemeMode);
+        }
+      } catch (error) {
+        console.error('Failed to load theme preference', error);
+      }
+    };
+    
+    loadThemePreference();
+  }, []);
+  
+  useEffect(() => {
+    const saveThemePreference = async () => {
+      try {
+        await AsyncStorage.setItem(THEME_STORAGE_KEY, themeMode);
+      } catch (error) {
+        console.error('Failed to save theme preference', error);
+      }
+    };
+    
+    saveThemePreference();
+  }, [themeMode]);
+  
+  const toggleTheme = () => {
+    setThemeMode(prevMode => {
+      if (prevMode === THEME_MODES.SYSTEM || prevMode === THEME_MODES.LIGHT) {
+        return THEME_MODES.DARK;
+      } 
+      return THEME_MODES.LIGHT;
+    });
+  };
+  
+  const useSystemTheme = () => {
+    setThemeMode(THEME_MODES.SYSTEM);
+  };
+  
+  return (
+    <ThemeContext.Provider
+      value={{
+        theme,
+        themeMode,
+        isDarkMode,
+        setThemeMode,
+        toggleTheme,
+        useSystemTheme,
+      }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => useContext(ThemeContext);
+
 export const lightTheme = {
   ...DefaultTheme,
   colors: {

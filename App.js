@@ -20,6 +20,7 @@ import { lightTheme, darkTheme } from './theme';
 import { getAuth } from 'firebase/auth';
 import firebase from './firebaseConfig';
 import { AuthProvider, getUserToken } from './auth';
+import { ThemeProvider } from './theme';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -72,6 +73,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <ThemeProvider>
       <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
         <Tab.Navigator
@@ -122,6 +124,7 @@ export default function App() {
           )}
         </Tab.Navigator>
       </NavigationContainer>
+      </ThemeProvider>
     </AuthProvider>
   );
 }
