@@ -9,7 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from './screens/homeScreen';
 import PlannerScreen from './screens/plannerScreen';
 import ProfileScreen from './screens/profileScreen';
-import SettingsScreen from './screens/settingsScreen';
 import CreateWorkoutScreen from './screens/createWorkoutScreen';
 import PlanSelectionScreen from './screens/planSelectionScreen';
 import createPlanScreen from './screens/createPlanScreen';
@@ -117,7 +116,6 @@ const MainNavigator = () => {
             <Tab.Screen name="Home" component={HomeScreen} />
             <Tab.Screen name="Planner" component={PlannerStackNavigator} options={{ headerShown: false }} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
-            <Tab.Screen name="Settings" component={SettingsScreen} />
           </>
         ) : (
           <>
