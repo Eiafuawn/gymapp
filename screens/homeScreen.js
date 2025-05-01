@@ -5,9 +5,14 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView
+  SafeAreaView,
+  Alert,
+  Platform,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Calendar from 'expo-calendar';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { getMockTodayWorkout, getActivePlan, getUserProfile } from '../api';
 import { globalStyles } from '../styles';
@@ -21,8 +26,82 @@ const HomeScreen = ({ navigation }) => {
   const [workoutsDone, setWorkoutsDone] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedTime, setSelectedTime] = useState(new Date());
   const [isDone, setIsDone] = useState(false);
   const { user } = useAuth();
+
+  const handleTimeChange = (event, selectedDate) => {
+    if (selectedDate) {
+      const now = new Date();
+      selectedDate.setFullYear(now.getFullYear(), now.getMonth(), now.getDate());
+      setSelectedTime(selectedDate);
+    }
+  };
+
+
+
+  async function getDefaultCalendarSource() {
+    if (Platform.OS === 'ios') {
+      const defaultCalendar = await Calendar.getDefaultCalendarAsync();
+      return defaultCalendar.source;
+    } else {
+      const calendars = await Calendar.getCalendarsAsync();
+      const localCalendar = calendars.find(cal => cal.accessLevel === Calendar.CalendarAccessLevel.OWNER);
+      return localCalendar?.source || { isLocalAccount: true, name: 'Expo Calendar' };
+    }
+  }
+
+  async function getOrCreateFitTrackCalendar() {
+    const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+    const existing = calendars.find(cal => cal.title === 'FitTrack');
+
+    if (existing) {
+      return existing.id;
+    }
+
+    const source = await getDefaultCalendarSource();
+
+    const newCalendarId = await Calendar.createCalendarAsync({
+      title: 'FitTrack',
+      color: '#00b894',
+      entityType: Calendar.EntityTypes.EVENT,
+      sourceId: source.id,
+      source: source,
+      name: 'FitTrack',
+      ownerAccount: 'personal',
+      accessLevel: Calendar.CalendarAccessLevel.OWNER,
+    });
+
+    return newCalendarId;
+  }
+
+  async function addFitTrackEvent() {
+    const { status } = await Calendar.requestCalendarPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Please allow calendar access to add events.');
+      return;
+    }
+
+    const calendarId = await getOrCreateFitTrackCalendar();
+
+    const eventDetails = {
+      title: 'Workout Session',
+      startDate: selectedTime,
+      endDate: new Date(selectedTime.getTime() + 60 * 60 * 1000),
+      timeZone: 'UTC',
+      location: 'Gym',
+      notes: 'Workout added from FitTrack',
+    };
+
+    try {
+      const eventId = await Calendar.createEventAsync(calendarId, eventDetails);
+      Alert.alert('Success', 'Workout added to your calendar!');
+    } catch (error) {
+      Alert.alert('Error', 'Could not create event: ' + error.message);
+    }
+  }
 
   useFocusEffect(React.useCallback(() => {
     if (!user) {
@@ -89,6 +168,12 @@ const HomeScreen = ({ navigation }) => {
     setWeeksWorkouts(prev => prev + 1);
   }
 
+  const handleAddToCalendar = () => {
+    setShowTimePicker(false);
+    addFitTrackEvent();
+    console.log('Workout added to calendar:', selectedTime);
+  }
+
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView contentContainerStyle={globalStyles.scrollContent}>
@@ -118,7 +203,7 @@ const HomeScreen = ({ navigation }) => {
 
           <TouchableOpacity
             style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.secondary }]}
-            onPress={() => console.log('Add to calendar')}
+            onPress={() => setShowTimePicker(true)}
           >
             <Text style={globalStyles.buttonTextPrimary}>Add to Calendar</Text>
           </TouchableOpacity>
@@ -174,6 +259,27 @@ const HomeScreen = ({ navigation }) => {
           <Text style={{ color: theme.colors.text }}>No workout found.</Text>
         )}
 
+        <Modal visible={showTimePicker} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContainer, { backgroundColor: theme.colors.cardBackground }]}>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Pick a Time</Text>
+
+              <DateTimePicker
+                mode="time"
+                display="spinner"
+                value={selectedTime}
+                onChange={handleTimeChange}
+                style={styles.datePicker}
+              />
+
+              <TouchableOpacity onPress={handleAddToCalendar} style={[styles.modalButton, { backgroundColor: theme.colors.primary }]}>
+                <Text style={[styles.modalButtonText, { color: theme.colors.background }]}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -194,6 +300,42 @@ const styles = {
   },
   exerciseList: {
     marginTop: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContainer: {
+    width: '85%',
+    borderRadius: 16,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+
+  modalButton: {
+    marginTop: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   progressBarContainer: {
     marginTop: 16,
