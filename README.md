@@ -118,3 +118,4 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 - [React Navigation](https://reactnavigation.org/)
 - [Firebase](https://firebase.google.com/docs)
 - [Haaga-Helia course](https://haagahelia.github.io/mobilecourse/)
+- [exerciseDB](https://exercisedb-api.vercel.app/)
