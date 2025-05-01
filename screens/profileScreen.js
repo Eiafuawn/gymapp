@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { getUserProfile, updateUserProfile } from '../api';
 import { useTheme } from '../theme';
-import { useAuth } from '../auth';
+import { useAuth, logOut } from '../auth';
 
 const ProfileScreen = ({ navigation, route }) => {
   const { theme, isDarkMode, toggleTheme } = useTheme();
@@ -63,7 +63,7 @@ const ProfileScreen = ({ navigation, route }) => {
         console.error('Failed to load profile:', error);
         setIsLoading(false);
       }
-    };
+};
     
     loadUserProfile();
   }, []);
@@ -137,6 +137,10 @@ const ProfileScreen = ({ navigation, route }) => {
     const multiplier = activityMultipliers[profile.activityLevel] || 1.55;
     return Math.round(bmr * multiplier);
   };
+
+  const handleLogout = async () => {
+    await logOut();
+  }
 
   const styles = createStyles(theme);
 
@@ -464,7 +468,10 @@ const ProfileScreen = ({ navigation, route }) => {
         )}
         
         {/* Logout button */}
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
         
