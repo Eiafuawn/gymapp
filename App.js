@@ -14,6 +14,7 @@ import PlanSelectionScreen from './screens/planSelectionScreen';
 import createPlanScreen from './screens/createPlanScreen';
 import SignInScreen from './screens/signInScreen';
 import SignUpScreen from './screens/signUpScreen';
+import ForgotPasswordScreen from './screens/forgotPasswordScreen';
 
 import { AuthProvider, useAuth } from './auth';
 import { ThemeProvider, useTheme } from './theme';
@@ -37,6 +38,24 @@ const PlannerStackNavigator = () => {
       <Stack.Screen name="CreateWorkout" component={CreateWorkoutScreen} options={{ title: 'Create Workout' }} />
       <Stack.Screen name="PlanSelection" component={PlanSelectionScreen} options={{ title: 'Select Plan' }} />
       <Stack.Screen name="CreatePlan" component={createPlanScreen} options={{ title: 'Create Plan' }} />
+    </Stack.Navigator>
+  );
+};
+
+const SignInStackNavigator = () => {
+  const { theme } = useTheme();
+
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: theme.colors.card,
+        },
+        headerTintColor: theme.colors.text,
+      }}
+    >
+      <Stack.Screen name="Log In" component={SignInScreen} options={{ title: 'Log In' }} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Reset Password' }} />
     </Stack.Navigator>
   );
 };
@@ -102,7 +121,7 @@ const MainNavigator = () => {
           </>
         ) : (
           <>
-            <Tab.Screen name="Log In" component={SignInScreen} />
+            <Tab.Screen name="Log In" component={SignInStackNavigator} options={{ headerShown: false }} />
             <Tab.Screen name="Register" component={SignUpScreen} />
           </>
         )}

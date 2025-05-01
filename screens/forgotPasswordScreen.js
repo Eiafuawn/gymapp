@@ -3,55 +3,61 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
-import { signIn } from '../auth';
+import { useTheme } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
+import { resetPassword } from '../auth';
 
-const SignInScreen = ({ navigation }) => {
+
+const ForgotPasswordScreen = () => {
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = async () => {
-    if (!email || !password) {
-      alert('Please fill in all fields');
+  const handleForgotPassword = async () => {
+    if (!email) {
+      alert('Please enter your email');
       return;
     }
-    
-    setLoading(true);
     try {
-      await signIn(email, password);
-    } catch (error) {
-      alert(error.message);
-    } finally {
+      setLoading(true);
+      await resetPassword(email);
+      alert('Password reset email sent!');
+    }
+    catch (error) {
+      alert('Error sending password reset email: ' + error.message);
+    }
+    finally {
       setLoading(false);
     }
-  };
+  }
+
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
+      <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoid}
       >
         <View style={styles.logoContainer}>
-          <Image
-            source={{ uri: 'https://reactnative.dev/img/tiny_logo.png' }}
-            style={styles.logo}
+          <Image 
+            source={{ uri: 'https://reactnative.dev/img/tiny_logo.png' }} 
+            style={styles.logo} 
             resizeMode="contain"
           />
           <Text style={styles.logoText}>FitTrack</Text>
         </View>
 
         <View style={styles.formContainer}>
-          <Text style={styles.headerText}>Welcome Back</Text>
-          <Text style={styles.subheaderText}>Sign in to continue</Text>
+          <Text style={styles.headerText}>Create Account</Text>
+          <Text style={styles.subheaderText}>Sign up to get started</Text>
           
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Email</Text>
@@ -65,43 +71,23 @@ const SignInScreen = ({ navigation }) => {
               autoCapitalize="none"
             />
           </View>
-          
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Password</Text>
-            <TextInput
-              placeholder="••••••••"
-              placeholderTextColor="#A0A0A0"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={styles.input}
-              autoCapitalize="none"
-            />
-          </View>
 
           <TouchableOpacity 
-            style={styles.forgotPasswordContainer}
-            onPress={() => navigation.navigate('ForgotPassword')}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
             style={styles.button}
-            onPress={handleSignIn}
+            onPress={handleForgotPassword}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.buttonText}>Sign In</Text>
+              <Text style={styles.buttonText}>Sign Up</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.footerContainer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.footerLink}>Sign Up</Text>
+            <Text style={styles.footerText}>Already have an account?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+              <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -110,7 +96,6 @@ const SignInScreen = ({ navigation }) => {
   );
 };
 
-// Shared styles for both screens
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -174,7 +159,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
-    marginBottom: 6,
+    marginBottom: 24,
   },
   forgotPasswordText: {
     color: '#4A6CF7',
@@ -216,5 +201,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignInScreen;
+export default ForgotPasswordScreen;
 
