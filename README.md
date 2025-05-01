@@ -11,7 +11,6 @@
 - Calendar integration via `expo-calendar`
 - User profile management
 - Dark/light theme support
-- Modular design with reusable components
 
 ---
 
