@@ -116,3 +116,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 - [Expo](https://expo.dev/)
 - [React Native](https://reactnative.dev/)
 - [React Navigation](https://reactnavigation.org/)
+- [Firebase](https://firebase.google.com/docs)
+- [Haaga-Helia course](https://haagahelia.github.io/mobilecourse/)
