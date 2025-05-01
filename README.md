@@ -69,6 +69,7 @@
 - `react-native`
 - `react-native-paper`
 - `@react-native-async-storage`
+- `@expo/vector-icons`
 
 ---
 
