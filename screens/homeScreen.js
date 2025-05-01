@@ -134,7 +134,7 @@ const HomeScreen = ({ navigation }) => {
     const loadWorkout = async () => {
       setIsLoading(true);
       try {
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         const currentDayName = dayNames[new Date().getDay()];
         const currentDayIndex = new Date().getDay();
         const activePlan = await getActivePlan(user);
@@ -145,13 +145,15 @@ const HomeScreen = ({ navigation }) => {
         const workoutPlan = activePlan.days.find(day => day.day === currentDayName);
         setTodayWorkout(workoutPlan);
 
-        const nbrOfWorkouts = activePlan.days.filter(day => day.restDay === true).length;
+        const nbrOfWorkouts = activePlan.days.filter(day => day.restDay === false).length;
+        console.log('Number of workouts in the plan:', nbrOfWorkouts);
         setWeeksWorkouts(nbrOfWorkouts);
 
         const workoutsBeforeToday = activePlan.days.filter(day => {
-          const dayIndex = dayNames.indexOf(day.day);
-          return dayIndex >= 0 && dayIndex < currentDayIndex;
+          const dayIndex = dayNames.indexOf(day.day) + 1;
+          return dayIndex >= 0 && dayIndex < currentDayIndex && !day.restDay;
         });
+        console.log('Workouts before today:', workoutsBeforeToday);
 
         setWorkoutsDone(workoutsBeforeToday.length);
       } catch (error) {
