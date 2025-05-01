@@ -23,6 +23,7 @@
 - [Git](https://git-scm.com/)
 
 ### Installation
+0. You first need to create a firebase account and app and configure it in a firebaseConfig.js file
 
 1. Clone the repository:
 
