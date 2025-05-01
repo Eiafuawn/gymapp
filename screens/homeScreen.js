@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-import { getMockTodayWorkout, getActivePlan, getUserProfile } from '../api';
+import { getActivePlan, getUserProfile } from '../api';
 import { globalStyles } from '../styles';
 import { useAuth } from '../auth';
 import { useTheme } from '../theme';
@@ -138,6 +138,10 @@ const HomeScreen = ({ navigation }) => {
         const currentDayName = dayNames[new Date().getDay()];
         const currentDayIndex = new Date().getDay();
         const activePlan = await getActivePlan(user);
+        if (!activePlan) {
+          Alert.alert('No active plan found', 'Please create a workout plan first.');
+          return;
+        }
         const workoutPlan = activePlan.days.find(day => day.day === currentDayName);
         setTodayWorkout(workoutPlan);
 
@@ -152,7 +156,6 @@ const HomeScreen = ({ navigation }) => {
         setWorkoutsDone(workoutsBeforeToday.length);
       } catch (error) {
         console.error('Error loading workout:', error);
-        setTodayWorkout(getMockTodayWorkout());
       } finally {
         setIsLoading(false);
       }

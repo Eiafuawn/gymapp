@@ -266,43 +266,6 @@ export const fetchWorkouts = async (user) => {
   }
 }
 
-
-export const fetchTodayWorkout = async () => {
-  try {
-    const response = await fetch('your-api-url/today-workout');
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching today\'s workout:', error);
-    return getMockTodayWorkout();
-  }
-};
-
-export const fetchWorkoutPlan = async () => {
-  try {
-    const response = await fetch('your-api-url/workout-plan');
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching workout plan:', error);
-    return getMockWorkoutPlan();
-  }
-};
-
-export const getMockTodayWorkout = () => {
-  return {
-    title: "Full Body Strength",
-    duration: "45 min",
-    exercises: [
-      { name: "Squats", sets: 3, reps: 12, rest: "60 sec" },
-      { name: "Push-ups", sets: 3, reps: 15, rest: "60 sec" },
-      { name: "Deadlifts", sets: 3, reps: 10, rest: "90 sec" },
-      { name: "Shoulder Press", sets: 3, reps: 12, rest: "60 sec" },
-      { name: "Lunges", sets: 3, reps: 10, rest: "60 sec" }
-    ]
-  };
-};
-
 export const getMockWorkoutPlan = () => {
   return {
     title: "4-week strength training",
