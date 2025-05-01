@@ -10,8 +10,6 @@ import {
   TextInput,
   Switch,
   ActivityIndicator,
-  Modal,
-  Platform
 } from 'react-native';
 import { getUserProfile, updateUserProfile } from '../api';
 import { useTheme } from '../theme';
@@ -744,18 +742,12 @@ const createStyles = (theme) => StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.error,
+    borderColor: "red",
   },
   logoutButtonText: {
-    color: theme.colors.error,
+    color: "red",
     fontSize: 16,
     fontWeight: '600',
-  },
-  versionText: {
-    textAlign: 'center',
-    color: theme.colors.textTertiary,
-    fontSize: 12,
-    marginBottom: 24,
   },
 });
 
