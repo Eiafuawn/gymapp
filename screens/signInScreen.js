@@ -46,7 +46,7 @@ const SignInScreen = ({ navigation }) => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.logoText}>Gym App</Text>
+          <Text style={styles.logoText}>FitTrack</Text>
         </View>
 
         <View style={styles.formContainer}>
