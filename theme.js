@@ -21,6 +21,7 @@ export const darkTheme = {
   colors: {
     ...DarkTheme.colors,
     primary: '#6366F1',
+    secondary: '#9193F5',
     background: '#111827',
     card: '#1F2937',
     text: '#F9FAFB',

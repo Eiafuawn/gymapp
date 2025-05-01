@@ -21,6 +21,7 @@ const HomeScreen = ({ navigation }) => {
   const [workoutsDone, setWorkoutsDone] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
+  const [isDone, setIsDone] = useState(false);
   const { user } = useAuth();
 
   useFocusEffect(React.useCallback(() => {
@@ -82,6 +83,12 @@ const HomeScreen = ({ navigation }) => {
     loadWorkout();
   }, [user]));
 
+  const handleWorkoutDone = () => {
+    setIsDone(true);
+    setWorkoutsDone(prev => prev + 1);
+    setWeeksWorkouts(prev => prev + 1);
+  }
+
   return (
     <SafeAreaView style={[globalStyles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView contentContainerStyle={globalStyles.scrollContent}>
@@ -106,11 +113,20 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <Text style={[globalStyles.sectionTitle, { color: theme.colors.text }]}>Today's Workout</Text>
+        <View style={[styles.todaysHeader, { flexDirection: 'row', justifyContent: 'space-between' }]}>
+          <Text style={[globalStyles.sectionTitle, { color: theme.colors.text }]}>Today's Workout</Text>
+
+          <TouchableOpacity
+            style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.secondary }]}
+            onPress={() => console.log('Add to calendar')}
+          >
+            <Text style={globalStyles.buttonTextPrimary}>Add to Calendar</Text>
+          </TouchableOpacity>
+        </View>
         {isLoading ? (
           <Text style={{ color: theme.colors.text }}>Loading your workout...</Text>
         ) : todayWorkout ? (
-          todayWorkout.restDay ? (
+          todayWorkout.restDay || isDone ? (
             <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
               <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>Rest Day</Text>
               <Text style={[globalStyles.cardSubtitle, { color: theme.colors.text }]}>Take a break and recover!</Text>
@@ -128,9 +144,9 @@ const HomeScreen = ({ navigation }) => {
                 </Text>
                 <TouchableOpacity
                   style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.primary }]}
-                  onPress={() => console.log('Start workout')}
+                  onPress={handleWorkoutDone}
                 >
-                  <Text style={globalStyles.buttonTextPrimary}>START</Text>
+                  <Text style={globalStyles.buttonTextPrimary}>DONE</Text>
                 </TouchableOpacity>
               </View>
 
@@ -158,31 +174,6 @@ const HomeScreen = ({ navigation }) => {
           <Text style={{ color: theme.colors.text }}>No workout found.</Text>
         )}
 
-
-        <Text style={[globalStyles.sectionTitle, { color: theme.colors.text }]}>Progress</Text>
-
-        <View style={[globalStyles.card, { backgroundColor: theme.colors.cardBackground }]}>
-          <Text style={[globalStyles.cardTitle, { color: theme.colors.text }]}>This Month</Text>
-          <View style={styles.progressBarContainer}>
-            <View style={styles.progressBarLabels}>
-              <Text style={[styles.progressBarText, { color: theme.colors.text }]}>Workouts Completed</Text>
-              <Text style={[styles.progressBarText, { color: theme.colors.text }]}>12/15</Text>
-            </View>
-            <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.border }]}>
-              <View style={[styles.progressBarFill, { backgroundColor: theme.colors.success, width: '80%' }]} />
-            </View>
-          </View>
-
-          <View style={styles.progressBarContainer}>
-            <View style={styles.progressBarLabels}>
-              <Text style={[styles.progressBarText, { color: theme.colors.text }]}>Weight Goal</Text>
-              <Text style={[styles.progressBarText, { color: theme.colors.text }]}>68/65 kg</Text>
-            </View>
-            <View style={[styles.progressBarBackground, { backgroundColor: theme.colors.border }]}>
-              <View style={[styles.progressBarFill, { backgroundColor: theme.colors.accent, width: '90%' }]} />
-            </View>
-          </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -195,6 +186,11 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  todaysHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   exerciseList: {
     marginTop: 8,
