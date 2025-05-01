@@ -99,15 +99,15 @@ Users can add today's workout to their calendar by tapping the "Add to Calendar"
 
 ---
 
-## 📸 Screenshots
-
-*Include screenshots of the app here.*
-
----
-
 ## 📄 License
 
-*Specify the license here (e.g., MIT, GPL).*
+Copyright (c) <2025> <Eiafuawn>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
@@ -116,13 +116,3 @@ Users can add today's workout to their calendar by tapping the "Add to Calendar"
 - [Expo](https://expo.dev/)
 - [React Native](https://reactnative.dev/)
 - [React Navigation](https://reactnavigation.org/)
-```
-
-To use this:
-
-1. Open your preferred text editor or IDE.
-2. Create a new file named `README.md` in the root directory of your project.
-3. Paste the above content into the file.
-4. Save the file.
-
-You can customize the placeholders like screenshots and license information as per your project's specifics. 
