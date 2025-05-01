@@ -40,20 +40,22 @@ const PlanSelectionScreen = ({ navigation, route, onSelect }) => {
   }, []);
 
   const handleSelectPlan = (plan) => {
+    if (route.params?.onSelect) {
+      route.params.onSelect(plan);
+    }
     navigation.goBack();
-    route.params?.onSelect(plan);
   };
 
   const handleCreateNewPlan = () => {
     navigation.navigate('CreatePlan');
   };
-  
+
   const countNbrOfWorkouts = (plan) => {
-    return plan.days.filter(day => day.restDay).length;
+    return plan.days.filter(day => !day.restDay).length;
   }
 
   const countNbrOfRestDays = (plan) => {
-    return plan.days.filter(day => !day.restDay).length;
+    return plan.days.filter(day => day.restDay).length;
   }
 
   useEffect(() => {

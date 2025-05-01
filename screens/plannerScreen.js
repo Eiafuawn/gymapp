@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -24,18 +24,16 @@ const PlannerScreen = ({ navigation, route }) => {
   const [isPlanActive, setIsPlanActive] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (route.params?.selectedPlan) {
-      console.log('Route params received:', route.params.selectedPlan);
-    }
-  }, [route.params]);
+  const isFocused = useIsFocused();
 
-  useFocusEffect(React.useCallback(() => {
+  useEffect(() => {
+    if (!isFocused || plan) return; // Don't load if not focused or already has plan
+
     const loadDefaultPlan = async () => {
       try {
-        const plan = await getActivePlan(user);
-        if (plan) {
-          setPlan(plan);
+        const activePlan = await getActivePlan(user);
+        if (activePlan) {
+          setPlan(activePlan);
           setIsPlanActive(true);
         } else {
           console.log('No active plan found.');
@@ -47,10 +45,9 @@ const PlannerScreen = ({ navigation, route }) => {
       }
     };
 
-    if (!route.params?.selectedPlan) {
-      loadDefaultPlan();
-    }
-  }, []));
+    loadDefaultPlan();
+  }, [isFocused, plan, user]);
+
 
   useFocusEffect(React.useCallback(() => {
     if (!plan) return;
@@ -80,9 +77,9 @@ const PlannerScreen = ({ navigation, route }) => {
 
   const navigateToPlanSelection = () => {
     navigation.navigate('PlanSelection', {
-      onSelect: (selectedPlan) => {
-        setPlan(selectedPlan);
-      },
+      onSelect: (plan) => {
+        setPlan(plan);
+      }
     });
   };
 
