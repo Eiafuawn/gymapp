@@ -15,9 +15,7 @@ import createPlanScreen from './screens/createPlanScreen';
 import SignInScreen from './screens/signInScreen';
 import SignUpScreen from './screens/signUpScreen';
 
-import { getAuth } from 'firebase/auth';
-import firebase from './firebaseConfig';
-import { AuthProvider, getUserToken } from './auth';
+import { AuthProvider, useAuth } from './auth';
 import { ThemeProvider, useTheme } from './theme';
 
 const Stack = createStackNavigator();
@@ -45,22 +43,8 @@ const PlannerStackNavigator = () => {
 
 const MainNavigator = () => {
   const { theme, isDarkMode } = useTheme();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    if (getUserToken()) {
-      const auth = getAuth(firebase);
-      const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-        setUser(currentUser);
-        setLoading(false);
-      });
-
-      return () => unsubscribe();
-    } else {
-      setLoading(false);
-    }
-  }, []);
 
   if (loading) {
     return (
