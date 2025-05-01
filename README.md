@@ -67,9 +67,8 @@
 - `expo-calendar`
 - `@react-navigation/native`
 - `react-native`
-- `react-native-gesture-handler`
-- `react-native-modal`
-- `@expo/vector-icons`
+- `react-native-paper`
+- `@react-native-async-storage`
 
 ---
 
