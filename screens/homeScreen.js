@@ -77,6 +77,10 @@ const HomeScreen = ({ navigation }) => {
   }
 
   async function addFitTrackEvent() {
+    if (todayWorkout.restDay || isDone) {
+      Alert.alert('Workout already done or rest day', 'You cannot add this workout to the calendar.');
+      return;
+    }
     const { status } = await Calendar.requestCalendarPermissionsAsync();
 
     if (status !== 'granted') {
@@ -208,7 +212,13 @@ const HomeScreen = ({ navigation }) => {
 
           <TouchableOpacity
             style={[globalStyles.buttonPrimary, { backgroundColor: theme.colors.secondary }]}
-            onPress={() => setShowTimePicker(true)}
+            onPress={() => {
+              if (todayWorkout.restDay || isDone) {
+                Alert.alert('Workout already done or rest day', 'You cannot add this workout to the calendar.');
+                return;
+              }
+              setShowTimePicker(true)
+            }}
           >
             <Text style={globalStyles.buttonTextPrimary}>Add to Calendar</Text>
           </TouchableOpacity>
@@ -277,9 +287,27 @@ const HomeScreen = ({ navigation }) => {
                 style={styles.datePicker}
               />
 
-              <TouchableOpacity onPress={handleAddToCalendar} style={[styles.modalButton, { backgroundColor: theme.colors.primary }]}>
-                <Text style={[styles.modalButtonText, { color: theme.colors.background }]}>Done</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                <TouchableOpacity
+                  onPress={() => setShowTimePicker(false)}
+                  style={[
+                    styles.modalButton,
+                    { backgroundColor: theme.colors.secondary, flex: 1 }
+                  ]}
+                >
+                  <Text style={[styles.modalButtonText, { color: theme.colors.background }]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleAddToCalendar}
+                  style={[
+                    styles.modalButton,
+                    { backgroundColor: theme.colors.primary, flex: 1 }
+                  ]}
+                >
+                  <Text style={[styles.modalButtonText, { color: theme.colors.background }]}>Done</Text>
+                </TouchableOpacity>
+              </View>
+
             </View>
           </View>
         </Modal>
