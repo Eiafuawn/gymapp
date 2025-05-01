@@ -340,25 +340,6 @@ const styles = {
     fontSize: 16,
     fontWeight: '600',
   },
-  progressBarContainer: {
-    marginTop: 16,
-  },
-  progressBarLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  progressBarText: {
-    fontSize: 14,
-  },
-  progressBarBackground: {
-    height: 8,
-    borderRadius: 4,
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
 };
 
 export default HomeScreen;
