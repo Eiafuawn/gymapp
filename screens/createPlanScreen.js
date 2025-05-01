@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { lightTheme, darkTheme } from '../theme';
-import { useColorScheme } from 'react-native';
 import { fetchWorkouts, handleSavePlan } from '../api';
 import { useAuth } from '../auth';
+import { useTheme } from '../theme';
 
 const CreatePlanScreen = ({ navigation, route }) => {
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { theme } = useTheme();
   const { user } = useAuth();
 
   const [planName, setPlanName] = useState('');
@@ -57,7 +55,7 @@ const CreatePlanScreen = ({ navigation, route }) => {
     const workout = selectedWorkouts[item];
     return (
       <TouchableOpacity
-        style={styles.dayItem}
+        style={[styles.dayItem, { backgroundColor: theme.colors.card }]}
         onPress={() => handleDayPress(item)}
       >
         <Text style={[styles.dayText, { color: theme.colors.text }]}>{item}</Text>
@@ -125,7 +123,7 @@ const CreatePlanScreen = ({ navigation, route }) => {
         data={['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}
         keyExtractor={(item) => item}
         renderItem={renderDayItem}
-        contentContainerStyle={styles.listContainer}
+        contentContainerStyle={[styles.listContainer, { backgroundColor: theme.colors.background, textColor: theme.colors.text }]}
       />
       <Modal
         visible={modalVisible}
@@ -134,14 +132,14 @@ const CreatePlanScreen = ({ navigation, route }) => {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.cardBackground }]}>
+          <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Select a Workout</Text>
             <FlatList
               data={workouts}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.modalItem}
+                  style={[styles.modalItem, { backgroundColor: theme.colors.card }]}
                   onPress={() => handleSelectWorkout(item)}
                 >
                   <Text style={[styles.modalItemText, { color: theme.colors.text }]}>{item.name}</Text>
@@ -149,7 +147,7 @@ const CreatePlanScreen = ({ navigation, route }) => {
               )}
             />
             <TouchableOpacity
-              style={[styles.closeButton, { backgroundColor: theme.colors.primary }]}
+              style={[styles.closeButton, { backgroundColor: theme.colors.card }]}
               onPress={() => setModalVisible(false)}
             >
               <Text style={styles.closeButtonText}>Close</Text>

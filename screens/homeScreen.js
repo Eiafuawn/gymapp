@@ -288,7 +288,6 @@ const HomeScreen = ({ navigation }) => {
   );
 };
 
-// Component-specific styles
 const styles = {
   workoutHeader: {
     flexDirection: 'row',
