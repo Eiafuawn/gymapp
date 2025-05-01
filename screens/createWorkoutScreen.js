@@ -134,12 +134,10 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
         day: selectedDay,
       });
     } else if (isUpdating && workoutId === null) {
-      console.log('Workout ID is null, creating a new workout');
       const newWorkout = {
         name: workoutName,
         exercises: selectedExercises,
       }
-      console.log('New workout:', newWorkout);
       handleSaveWorkout(user, newWorkout);
       const workouts = await fetchWorkouts(user);
       const newWorkoutFetched = workouts.find(workout => workout.name === workoutName);

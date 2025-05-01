@@ -69,7 +69,6 @@ export const handleSaveWorkout = (user, workout) => {
 export const handleUpdateWorkout = (user, workoutId, planId, day, updatedWorkout) => {
   return new Promise((resolve, reject) => {
     try {
-      console.log(day)
       let updates;
       if (workoutId === null) {
         console.log('Workout ID is null, updating only workout plan');

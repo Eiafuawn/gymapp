@@ -53,7 +53,6 @@ const ProfileScreen = ({ navigation, route }) => {
     const loadUserProfile = async () => {
       try {
         const userProfile = await getUserProfile(user);
-        console.log('User Profile:', user);
         if (userProfile) {
           setProfile(userProfile);
           setEditableProfile(userProfile);
