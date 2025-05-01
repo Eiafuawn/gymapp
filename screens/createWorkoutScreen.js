@@ -17,7 +17,8 @@ import {
   fetchExoPerBodyPart,
   fetchAutocompleteExercises,
   fetchExoById,
-  handleUpdateWorkout
+  handleUpdateWorkout,
+  fetchWorkouts
 } from '../api';
 import Pagination from '../components/paginationComponent';
 import { handleSaveWorkout } from '../api';
@@ -45,8 +46,12 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
       setWorkoutName(selectedWorkout.name);
       setSelectedExercises(selectedWorkout.exercises);
       setIsUpdating(true);
+    } else if (planId) {
+      setWorkoutName('New Workout');
+      setIsUpdating(true);
     } else {
       setWorkoutName('New Workout');
+      setIsUpdating(false);
     }
   }, [planId, selectedWorkout]);
 
@@ -118,19 +123,37 @@ const CreateWorkoutScreen = ({ route, navigation }) => {
   };
 
 
-  const saveWorkout = () => {
-    if (isUpdating) {
-      console.log(selectedWorkout);
-      handleUpdateWorkout(user, selectedWorkout.id, {
+  const saveWorkout = async () => {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayNbr = dayNames.indexOf(selectedDay) - 1;
+    const workoutId = selectedWorkout ? selectedWorkout.id : null;
+    if (isUpdating && workoutId !== null) {
+      handleUpdateWorkout(user, workoutId, planId, dayNbr, {
         name: workoutName,
-        exercises: selectedExercises,
+        workout: selectedExercises,
         day: selectedDay,
       });
-    } else {
+    } else if (isUpdating && workoutId === null) {
+      console.log('Workout ID is null, creating a new workout');
+      const newWorkout = {
+        name: workoutName,
+        exercises: selectedExercises,
+      }
+      console.log('New workout:', newWorkout);
+      handleSaveWorkout(user, newWorkout);
+      const workouts = await fetchWorkouts(user);
+      const newWorkoutFetched = workouts.find(workout => workout.name === workoutName);
+      const newDay = {
+        day: selectedDay,
+        workout: newWorkoutFetched,
+        restDay: false,
+      }
+      handleUpdateWorkout(user, workoutId, planId, dayNbr, newDay);
+
+    } else if (!isUpdating) {
       handleSaveWorkout(user, {
         name: workoutName,
         exercises: selectedExercises,
-        day: selectedDay,
       });
     }
 

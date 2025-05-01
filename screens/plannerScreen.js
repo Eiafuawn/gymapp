@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -12,13 +12,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { globalStyles } from '../styles';
-import { lightTheme, darkTheme } from '../theme';
-import { fetchPlans, activatePlan, getActivePlanId } from '../api';
+import { getActivePlan, activatePlan, getActivePlanId } from '../api';
 import { useAuth } from '../auth';
 import { useTheme } from '../theme';
 
 const PlannerScreen = ({ navigation, route }) => {
-  const colorScheme = useColorScheme();
   const { theme } = useTheme();
   const [plan, setPlan] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,21 +30,15 @@ const PlannerScreen = ({ navigation, route }) => {
     }
   }, [route.params]);
 
-  useEffect(() => {
+  useFocusEffect(React.useCallback(() => {
     const loadDefaultPlan = async () => {
       try {
-        const plans = await fetchPlans(user);
-        if (plans.length > 0) {
-          const defaultPlan = plans[0];
-          setPlan(defaultPlan);
-          const activePlan = await getActivePlanId(user);
-          if (String(activePlan) === String(defaultPlan.id)) {
-            setIsPlanActive(true);
-          } else {
-            setIsPlanActive(false);
-          }
+        const plan = await getActivePlan(user);
+        if (plan) {
+          setPlan(plan);
+          setIsPlanActive(true);
         } else {
-          console.log('No plans found.');
+          console.log('No active plan found.');
         }
       } catch (error) {
         console.error('Error loading default plan:', error);
@@ -58,9 +50,9 @@ const PlannerScreen = ({ navigation, route }) => {
     if (!route.params?.selectedPlan) {
       loadDefaultPlan();
     }
-  }, []);
+  }, []));
 
-  useEffect(() => {
+  useFocusEffect(React.useCallback(() => {
     if (!plan) return;
     const activePlan = async () => {
       try {
@@ -75,7 +67,7 @@ const PlannerScreen = ({ navigation, route }) => {
       }
     };
     activePlan();
-  }, [plan]);
+  }, [plan]));
 
 
 
@@ -196,11 +188,19 @@ const PlannerScreen = ({ navigation, route }) => {
                     index < plan.days.length - 1 && globalStyles.listItemDivider
                   ]}
                   onPress={() => {
-                    navigation.navigate('CreateWorkout', {
+                    if (day.restDay) {
+                      navigation.navigate('CreateWorkout', {
+                        selectedDay: day.day,
+                        selectedWorkout: null,
+                        planId: plan.id,
+                      });
+                    } else {
+                      navigation.navigate('CreateWorkout', {
                         planId: plan.id,
                         selectedWorkout: day.workout,
                         selectedDay: day.day,
-                    });
+                      });
+                    }
                   }}
                 >
                   <View>

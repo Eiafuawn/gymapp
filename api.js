@@ -66,12 +66,22 @@ export const handleSaveWorkout = (user, workout) => {
     });
 }
 
-export const handleUpdateWorkout = (user, workoutId, updatedWorkout) => {
+export const handleUpdateWorkout = (user, workoutId, planId, day, updatedWorkout) => {
   return new Promise((resolve, reject) => {
     try {
-      const updates = {
-        [`user/${user.uid}/workouts/${workoutId}`]: updatedWorkout,
-      };
+      console.log(day)
+      let updates;
+      if (workoutId === null) {
+        console.log('Workout ID is null, updating only workout plan');
+        updates = {
+          [`user/${user.uid}/workoutPlans/${planId}/days/${day}`]: updatedWorkout,
+        };
+      } else {
+        updates = {
+          [`user/${user.uid}/workouts/${workoutId}`]: updatedWorkout,
+          [`user/${user.uid}/workoutPlans/${planId}/days/${day}`]: updatedWorkout,
+        };
+      }
 
       update(ref(database), updates)
         .then(() => {
